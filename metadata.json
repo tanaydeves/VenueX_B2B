@@ -1,0 +1,6 @@
+{
+  "name": "VenueX — Hospitality Resource Exchange",
+  "description": "B2B marketplace where hotels, caterers, and event venues rent out idle banquet equipment, kitchen gear, and spaces.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
