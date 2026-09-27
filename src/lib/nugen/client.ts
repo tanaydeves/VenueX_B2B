@@ -169,8 +169,8 @@ export class NugenClient {
 
     if (typeof fileInput === 'string' && typeof window === 'undefined') {
       // Node.js environment reading from file path
-      const fs = await import('fs');
-      const path = await import('path');
+      const fs = await import('fs' /* @vite-ignore */);
+      const path = await import('path' /* @vite-ignore */);
       const fileBuffer = fs.readFileSync(fileInput);
       const name = fileName || path.basename(fileInput);
       const blob = new Blob([fileBuffer], { type: 'text/markdown' });
