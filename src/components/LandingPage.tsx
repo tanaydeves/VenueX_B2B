@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'motion/react';
 import { 
   Building2, 
   Search, 
@@ -30,260 +31,323 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenReso
     db.getResources().then(list => setFeaturedResources(list.slice(0, 4)));
   }, []);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } }
+  };
+
   return (
-    <div className="space-y-16 sm:space-y-20 pb-20">
+    <div className="space-y-24 pb-24 pt-10">
       
       {/* 1. Hero Section */}
-      <section className="text-center pt-8 sm:pt-14 max-w-3xl mx-auto px-4">
-        {/* Calm Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E6F4F1] text-[#0F766E] text-xs font-semibold mb-6 soft-shadow border border-[#0F766E]/15">
-          <ShieldCheck className="w-4 h-4 text-[#0F766E]" />
+      <section className="text-center pt-8 sm:pt-14 max-w-4xl mx-auto px-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border-indigo-500/20 text-indigo-700 text-xs sm:text-sm font-semibold mb-8 shadow-sm"
+        >
+          <Sparkles className="w-4 h-4 text-indigo-600" />
           <span>Verified Hospitality Network · Mumbai & Navi Mumbai</span>
-        </div>
+        </motion.div>
 
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-[#1E293B] tracking-tight leading-tight [text-wrap:balance]">
-          Turn Idle Hospitality Resources Into Revenue.
-        </h1>
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-gray-900 tracking-tight leading-tight [text-wrap:balance] font-outfit"
+        >
+          Turn Idle Assets Into <span className="text-gradient">Revenue</span>
+        </motion.h1>
 
-        <p className="mt-4 text-base sm:text-lg text-[#64748B] max-w-2xl mx-auto leading-relaxed [text-wrap:balance]">
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed [text-wrap:balance]"
+        >
           Connect with nearby hotels, caterers, and event venues to rent banquet chairs, tables, commercial kitchen equipment, and transport when you need them temporarily.
-        </p>
+        </motion.p>
 
         {/* Dual Call-to-Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+        >
           <button
             onClick={() => onNavigate('search')}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#0F766E] hover:bg-[#0b5751] text-white text-sm sm:text-base font-semibold flex items-center justify-center gap-2 shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:scale-105 text-white text-base font-semibold flex items-center justify-center gap-2 shadow-xl shadow-indigo-500/30 transition-all duration-300 cursor-pointer"
           >
-            <Search className="w-4 h-4" />
-            <span>Find Resources</span>
+            <Search className="w-5 h-5" />
+            <span>Explore Resources</span>
           </button>
 
           <button
             onClick={() => onNavigate('provider-dashboard', { openAddModal: true })}
-            className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#E8E6DF] text-[#1E293B] text-sm sm:text-base font-semibold flex items-center justify-center gap-2 soft-shadow transition-all duration-150 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl glass hover:bg-white/90 text-gray-900 text-base font-semibold flex items-center justify-center gap-2 hover:scale-105 transition-all duration-300 cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4 text-[#A15325]" />
+            <PlusCircle className="w-5 h-5 text-indigo-600" />
             <span>List a Resource</span>
           </button>
-        </div>
+        </motion.div>
 
         {/* Quick Search Preview Pill */}
-        <div className="mt-10 p-2 sm:p-3 bg-white rounded-2xl border border-[#E8E6DF] soft-shadow max-w-2xl mx-auto flex flex-col sm:flex-row gap-2 items-center">
-          <div className="flex-1 w-full flex items-center gap-2.5 px-3 py-2 bg-[#FAF9F6] rounded-xl text-left">
-            <Search className="w-4 h-4 text-[#0F766E] shrink-0" />
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-12 p-3 glass rounded-2xl max-w-2xl mx-auto flex flex-col sm:flex-row gap-3 items-center"
+        >
+          <div className="flex-1 w-full flex items-center gap-3 px-4 py-3 bg-white/50 rounded-xl text-left border border-gray-100">
+            <Search className="w-5 h-5 text-indigo-500 shrink-0" />
             <input 
               type="text" 
               readOnly 
               onClick={() => onNavigate('search')}
               placeholder="e.g. 200 Chiavari chairs, Rational combi oven, Belapur..." 
-              className="bg-transparent text-sm text-[#1E293B] w-full focus:outline-none cursor-pointer placeholder:text-[#94A3B8]"
+              className="bg-transparent text-base text-gray-900 w-full focus:outline-none cursor-pointer placeholder:text-gray-400"
             />
           </div>
           <button
             onClick={() => onNavigate('search')}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0F766E] text-white text-xs sm:text-sm font-semibold hover:bg-[#0b5751] transition-colors whitespace-nowrap cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors whitespace-nowrap cursor-pointer"
           >
-            Explore
+            Search Now
           </button>
-        </div>
+        </motion.div>
       </section>
 
       {/* Social Proof Numbers */}
-      <section className="max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E8E6DF] soft-shadow grid grid-cols-3 divide-x divide-[#E8E6DF]/80 text-center">
-          <div className="px-2">
-            <div className="text-2xl sm:text-3xl font-bold text-[#0F766E] font-mono tabular-nums">1,400+</div>
-            <div className="text-xs sm:text-sm text-[#64748B] mt-1 font-medium">Hospitality Venues</div>
+      <section className="max-w-5xl mx-auto px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="glass rounded-2xl p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-gray-200/50 text-center gap-6 sm:gap-0"
+        >
+          <div className="px-4">
+            <div className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-indigo-700 font-mono tabular-nums">1,400+</div>
+            <div className="text-sm text-gray-500 mt-2 font-medium">Hospitality Venues</div>
           </div>
-          <div className="px-2">
-            <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums">₹3.8 Cr</div>
-            <div className="text-xs sm:text-sm text-[#64748B] mt-1 font-medium">Shared Safely</div>
+          <div className="px-4">
+            <div className="text-3xl sm:text-4xl font-extrabold text-gray-900 font-mono tabular-nums">₹3.8 Cr</div>
+            <div className="text-sm text-gray-500 mt-2 font-medium">Shared Safely</div>
           </div>
-          <div className="px-2">
-            <div className="text-2xl sm:text-3xl font-bold text-[#2A6D58] font-mono tabular-nums">98.4%</div>
-            <div className="text-xs sm:text-sm text-[#64748B] mt-1 font-medium">Satisfaction Rate</div>
+          <div className="px-4">
+            <div className="text-3xl sm:text-4xl font-extrabold text-emerald-600 font-mono tabular-nums">98.4%</div>
+            <div className="text-sm text-gray-500 mt-2 font-medium">Satisfaction Rate</div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* 2. Simple 3-Step Visual: (List → Match → Complete) */}
-      <section className="max-w-5xl mx-auto px-4">
-        <div className="text-center sm:text-left sm:flex sm:justify-between sm:items-end mb-8">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0F766E]">
-              EFFORTLESS LOGISTICS
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1E293B] mt-1">
-              How VenueX Works
-            </h2>
-          </div>
-          <p className="text-sm text-[#64748B] mt-2 sm:mt-0">
-            Engineered exclusively for hotel directors, banquet captains, and executive chefs.
-          </p>
+      {/* 2. Simple 3-Step Visual */}
+      <section className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-12">
+          <span className="text-sm font-bold uppercase tracking-widest text-indigo-600">
+            Effortless Logistics
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2 font-outfit">
+            How VenueX Works
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        >
           {/* Step 1: List */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E8E6DF] soft-shadow flex flex-col justify-between space-y-5 hover:-translate-y-1 transition-transform duration-200">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-xl bg-[#E6F4F1] text-[#0F766E] flex items-center justify-center font-bold">
-                <Layers className="w-6 h-6" />
+          <motion.div variants={itemVariants} className="glass p-8 rounded-3xl flex flex-col h-full group hover:-translate-y-2 transition-transform duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                <Layers className="w-7 h-7" />
               </div>
-              <span className="text-sm font-bold text-[#94A3B8]">01</span>
+              <span className="text-4xl font-bold text-gray-100/50">01</span>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-[#1E293B] mb-2">1. List what is idle</h3>
-              <p className="text-sm text-[#64748B] leading-relaxed">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 font-outfit">List what is idle</h3>
+              <p className="text-base text-gray-600 leading-relaxed">
                 Add extra banquet chairs, combi ovens, or delivery vehicles with your daily rate, deposit %, and available date window in minutes.
               </p>
             </div>
-            <div className="pt-3 border-t border-[#F4F3EF] flex items-center gap-1.5 text-xs text-[#0F766E] font-medium">
-              <Check className="w-3.5 h-3.5" />
-              <span>Full control over pricing & calendar</span>
+            <div className="pt-5 mt-5 border-t border-gray-100 flex items-center gap-2 text-sm text-indigo-600 font-semibold">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Full control over pricing</span>
             </div>
-          </div>
+          </motion.div>
 
           {/* Step 2: Match */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E8E6DF] soft-shadow flex flex-col justify-between space-y-5 hover:-translate-y-1 transition-transform duration-200">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-xl bg-[#FEF7EE] text-[#A15325] flex items-center justify-center font-bold">
-                <Handshake className="w-6 h-6" />
+          <motion.div variants={itemVariants} className="glass p-8 rounded-3xl flex flex-col h-full group hover:-translate-y-2 transition-transform duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                <Handshake className="w-7 h-7" />
               </div>
-              <span className="text-sm font-bold text-[#94A3B8]">02</span>
+              <span className="text-4xl font-bold text-gray-100/50">02</span>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-[#1E293B] mb-2">2. Match with peers</h3>
-              <p className="text-sm text-[#64748B] leading-relaxed">
-                Nearby verified hotels and caterers find your gear when facing surge demand. Chat in real-time, customize counts, and finalize structured deals.
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 font-outfit">Match with peers</h3>
+              <p className="text-base text-gray-600 leading-relaxed">
+                Nearby verified hotels and caterers find your gear when facing surge demand. Chat in real-time, customize counts, and finalize deals.
               </p>
             </div>
-            <div className="pt-3 border-t border-[#F4F3EF] flex items-center gap-1.5 text-xs text-[#A15325] font-medium">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>Average 3.5 km exchange distance</span>
+            <div className="pt-5 mt-5 border-t border-gray-100 flex items-center gap-2 text-sm text-purple-600 font-semibold">
+              <MapPin className="w-4 h-4" />
+              <span>Avg 3.5 km exchange distance</span>
             </div>
-          </div>
+          </motion.div>
 
           {/* Step 3: Complete */}
-          <div className="bg-white p-6 rounded-2xl border border-[#E8E6DF] soft-shadow flex flex-col justify-between space-y-5 hover:-translate-y-1 transition-transform duration-200">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-xl bg-[#EBF6F2] text-[#2A6D58] flex items-center justify-center font-bold">
-                <ShieldCheck className="w-6 h-6" />
+          <motion.div variants={itemVariants} className="glass p-8 rounded-3xl flex flex-col h-full group hover:-translate-y-2 transition-transform duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-7 h-7" />
               </div>
-              <span className="text-sm font-bold text-[#94A3B8]">03</span>
+              <span className="text-4xl font-bold text-gray-100/50">03</span>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-[#1E293B] mb-2">3. Complete & Dispatch</h3>
-              <p className="text-sm text-[#64748B] leading-relaxed">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 font-outfit">Complete & Dispatch</h3>
+              <p className="text-base text-gray-600 leading-relaxed">
                 Pay a simulated security deposit, lock inventory availability, and track dispatch status seamlessly powered by Porter logistics.
               </p>
             </div>
-            <div className="pt-3 border-t border-[#F4F3EF] flex items-center gap-1.5 text-xs text-[#2A6D58] font-medium">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Protected payments & 100% deposit return</span>
+            <div className="pt-5 mt-5 border-t border-gray-100 flex items-center gap-2 text-sm text-emerald-600 font-semibold">
+              <ShieldCheck className="w-4 h-4" />
+              <span>100% deposit return guarantee</span>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* 3. Featured Resources Section */}
       <section className="max-w-6xl mx-auto px-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-[#1E293B]">Featured Resources in Navi Mumbai</h2>
-            <p className="text-sm text-[#64748B]">Ready for immediate reservation from vetted hospitality peers</p>
+            <h2 className="text-3xl font-bold text-gray-900 font-outfit">Featured Inventory</h2>
+            <p className="text-base text-gray-500 mt-1">Ready for immediate reservation from vetted hospitality peers</p>
           </div>
           <button
             onClick={() => onNavigate('search')}
-            className="text-sm font-semibold text-[#0F766E] hover:text-[#0b5751] flex items-center gap-1 cursor-pointer"
+            className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 cursor-pointer bg-indigo-50 px-4 py-2 rounded-full transition-colors"
           >
             <span>View all inventory</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        >
           {featuredResources.map(res => (
-            <article
+            <motion.article
+              variants={itemVariants}
               key={res.id}
               onClick={() => onOpenResource(res.id)}
-              className="bg-white rounded-2xl overflow-hidden border border-[#E8E6DF] soft-shadow hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer group"
+              className="glass rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 flex flex-col justify-between cursor-pointer group border-white/40"
             >
               <div>
-                <div className="relative h-40 w-full overflow-hidden bg-[#F4F3EF]">
+                <div className="relative h-48 w-full overflow-hidden bg-gray-100">
                   <img
                     src={res.imageUrl}
                     alt={res.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.currentTarget as HTMLElement).style.display = 'none';
                     }}
                   />
-                  <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/95 text-[#1E293B] shadow-xs">
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent"></div>
+                  <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-md text-gray-900 shadow-sm">
                     {res.quantityTotal} units
                   </span>
-                  <span className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#1E293B]/80 text-white backdrop-blur-xs flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-[#E6F4F1]" />
+                  <span className="absolute bottom-3 left-3 px-2.5 py-1.5 rounded-lg text-xs font-medium glass-dark text-white flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-indigo-300" />
                     {res.location.split(',')[0]}
                   </span>
                 </div>
 
-                <div className="p-4 space-y-2">
-                  <div className="text-[11px] font-semibold text-[#0F766E] uppercase tracking-wide">
+                <div className="p-5 space-y-2">
+                  <div className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
                     {res.category}
                   </div>
-                  <h3 className="text-sm font-bold text-[#1E293B] group-hover:text-[#0F766E] transition-colors line-clamp-2">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 font-outfit leading-snug">
                     {res.name}
                   </h3>
-                  <p className="text-xs text-[#64748B] line-clamp-2">
+                  <p className="text-sm text-gray-500 line-clamp-2">
                     {res.description}
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 pt-0 border-t border-[#F4F3EF] flex items-center justify-between mt-2">
+              <div className="p-5 pt-0 border-t border-gray-100/50 flex items-center justify-between mt-4">
                 <div>
-                  <span className="text-[11px] text-[#94A3B8] block">Daily Rate</span>
-                  <span className="text-base font-bold text-[#1E293B] font-mono">
+                  <span className="text-xs text-gray-400 block font-medium">Daily Rate</span>
+                  <span className="text-xl font-extrabold text-gray-900 font-mono">
                     ₹{res.pricePerUnitPerDay.toLocaleString('en-IN')}
-                    <span className="text-xs font-normal text-[#64748B]">/day</span>
+                    <span className="text-xs font-medium text-gray-500">/day</span>
                   </span>
                 </div>
-                <span className="w-8 h-8 rounded-xl bg-[#E6F4F1] text-[#0F766E] flex items-center justify-center group-hover:bg-[#0F766E] group-hover:text-white transition-colors">
-                  <ArrowRight className="w-4 h-4" />
+                <span className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 transform group-hover:rotate-[-45deg]">
+                  <ArrowRight className="w-5 h-5" />
                 </span>
               </div>
-            </article>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* 4. Protection & Guarantee Banner */}
       <section className="max-w-5xl mx-auto px-4">
-        <div className="bg-[#E6F4F1]/60 rounded-3xl p-6 sm:p-8 border border-[#0F766E]/20 soft-shadow flex flex-col md:flex-row items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#0F766E] text-white flex items-center justify-center shrink-0 shadow-sm">
-            <ShieldCheck className="w-8 h-8" />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-3xl p-8 sm:p-12 glass border border-indigo-200 shadow-2xl shadow-indigo-500/10 flex flex-col md:flex-row items-center gap-8"
+        >
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+          <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+          <div className="relative z-10 w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0 shadow-lg transform rotate-[-10deg]">
+            <ShieldCheck className="w-10 h-10" />
           </div>
-          <div className="space-y-1.5 text-center md:text-left flex-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#0F766E] text-xs font-semibold border border-[#0F766E]/20">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>VenueX Protected Transfer Guarantee</span>
+          
+          <div className="relative z-10 space-y-3 text-center md:text-left flex-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white text-indigo-600 text-xs font-bold border border-indigo-100 shadow-sm">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>VenueX Protected Transfer</span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-[#1E293B]">
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 font-outfit">
               Every rental includes refundable security deposits and peer verification.
             </h3>
-            <p className="text-sm text-[#64748B] max-w-2xl leading-relaxed">
+            <p className="text-base text-gray-600 max-w-2xl leading-relaxed">
               Maintain full oversight over who accesses your hospitality assets. All transactions are securely held until dockside inspection, with simulated delivery powered by Porter.
             </p>
           </div>
-          <button
-            onClick={() => onNavigate('search')}
-            className="px-6 py-3 rounded-xl bg-[#0F766E] text-white text-sm font-semibold hover:bg-[#0b5751] transition-colors shrink-0 shadow-xs cursor-pointer"
-          >
-            Start Exploring
-          </button>
-        </div>
+          
+          <div className="relative z-10 shrink-0">
+            <button
+              onClick={() => onNavigate('search')}
+              className="px-8 py-4 rounded-2xl bg-gray-900 text-white text-base font-semibold hover:bg-gray-800 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 cursor-pointer whitespace-nowrap"
+            >
+              Start Exploring
+            </button>
+          </div>
+        </motion.div>
       </section>
 
     </div>

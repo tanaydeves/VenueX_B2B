@@ -90,23 +90,23 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#E8E6DF] relative animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#E8E6DF] relative animate-in fade-in zoom-in-95 duration-150">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-[#64748B] hover:bg-[#F4F3EF] transition-colors cursor-pointer"
+          className="absolute top-5 right-5 p-2 rounded-full text-gray-500 hover:bg-[#F4F3EF] transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#0F766E] text-white flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center">
             <Plus className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-[#1E293B]">List Idle Hospitality Resource</h2>
-            <p className="text-xs text-[#64748B]">
+            <h2 className="text-xl font-bold text-gray-900">List Idle Hospitality Resource</h2>
+            <p className="text-xs text-gray-500">
               Publish equipment or space to verified hospitality peers in Navi Mumbai
             </p>
           </div>
@@ -115,7 +115,7 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto pr-2">
           
           <div>
-            <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+            <label className="block text-xs font-semibold text-gray-900 mb-1">
               Resource Title / Name
             </label>
             <input
@@ -124,19 +124,19 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
               placeholder="e.g. 150x Gold Chiavari Banquet Chairs with Cushions"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-sm text-[#1E293B] focus:border-[#0F766E] focus:outline-none"
+              className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-sm text-gray-900 focus:border-blue-600 focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Category
               </label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as any)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs text-[#1E293B] focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs text-gray-900 focus:outline-none"
               >
                 <option value="Chairs & Seating">Chairs & Seating</option>
                 <option value="Tables & Dining">Tables & Dining</option>
@@ -148,13 +148,13 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Storage / Dispatch Location
               </label>
               <select
                 value={location}
                 onChange={e => setLocation(e.target.value)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs text-[#1E293B] focus:outline-none"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs text-gray-900 focus:outline-none"
               >
                 <option value="Vashi, Navi Mumbai">Vashi, Navi Mumbai</option>
                 <option value="CBD Belapur, Navi Mumbai">CBD Belapur, Navi Mumbai</option>
@@ -166,7 +166,7 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+            <label className="block text-xs font-semibold text-gray-900 mb-1">
               Select or Provide Photo
             </label>
             <div className="flex gap-2 overflow-x-auto pb-2">
@@ -176,7 +176,7 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
                   type="button"
                   onClick={() => setImageUrl(img.url)}
                   className={`w-20 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
-                    imageUrl === img.url ? 'border-[#0F766E] ring-2 ring-[#0F766E]/20' : 'border-[#E8E6DF] opacity-70'
+                    imageUrl === img.url ? 'border-blue-600 ring-2 ring-[#0F766E]/20' : 'border-[#E8E6DF] opacity-70'
                   }`}
                 >
                   <img src={img.url} alt={img.label} className="w-full h-full object-cover" />
@@ -188,12 +188,12 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
               placeholder="Or paste external image URL"
               value={imageUrl}
               onChange={e => setImageUrl(e.target.value)}
-              className="w-full mt-2 px-3 py-1.5 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs text-[#1E293B]"
+              className="w-full mt-2 px-3 py-1.5 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs text-gray-900"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+            <label className="block text-xs font-semibold text-gray-900 mb-1">
               Description & Operational Notes
             </label>
             <textarea
@@ -202,13 +202,13 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
               placeholder="Describe materials, condition, specifications, and suggested event uses..."
               value={description}
               onChange={e => setDescription(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs text-[#1E293B] focus:outline-none"
+              className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs text-gray-900 focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Total Available Units
               </label>
               <input
@@ -217,12 +217,12 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
                 required
                 value={quantityTotal}
                 onChange={e => setQuantityTotal(parseInt(e.target.value) || 1)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs font-bold text-[#1E293B]"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs font-bold text-gray-900"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Daily Rate (₹ / unit / day)
               </label>
               <input
@@ -231,12 +231,12 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
                 required
                 value={pricePerUnitPerDay}
                 onChange={e => setPricePerUnitPerDay(parseInt(e.target.value) || 1)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs font-bold text-[#0F766E]"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs font-bold text-blue-600"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Refundable Deposit (%)
               </label>
               <input
@@ -246,14 +246,14 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
                 required
                 value={depositPercent}
                 onChange={e => setDepositPercent(parseInt(e.target.value) || 15)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs font-bold text-[#1E293B]"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs font-bold text-gray-900"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Available From
               </label>
               <input
@@ -261,11 +261,11 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
                 required
                 value={availabilityStartDate}
                 onChange={e => setAvailabilityStartDate(e.target.value)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs text-[#1E293B]"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs text-gray-900"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Available Until
               </label>
               <input
@@ -273,35 +273,35 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
                 required
                 value={availabilityEndDate}
                 onChange={e => setAvailabilityEndDate(e.target.value)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs text-[#1E293B]"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs text-gray-900"
               />
             </div>
           </div>
 
           {/* Delivery Options */}
-          <div className="p-3 bg-[#FAF9F6] rounded-2xl border border-[#E8E6DF] space-y-3">
-            <h4 className="text-xs font-bold text-[#1E293B]">Delivery & Dispatch Capabilities</h4>
+          <div className="p-3 bg-gray-50 rounded-lg border border-[#E8E6DF] space-y-3">
+            <h4 className="text-xs font-bold text-gray-900">Delivery & Dispatch Capabilities</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex items-center gap-2 text-xs text-[#1E293B]">
+              <label className="flex items-center gap-2 text-xs text-gray-900">
                 <input
                   type="checkbox"
                   checked={deliveryAvailable}
                   onChange={e => setDeliveryAvailable(e.target.checked)}
-                  className="rounded text-[#0F766E] accent-[#0F766E]"
+                  className="rounded text-blue-600 accent-[#0F766E]"
                 />
                 <span>Supports Porter dock dispatch</span>
               </label>
 
               {deliveryAvailable && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#64748B]">Flat Fee:</span>
+                  <span className="text-xs text-gray-500">Flat Fee:</span>
                   <input
                     type="number"
                     value={flatDeliveryFee}
                     onChange={e => setFlatDeliveryFee(parseInt(e.target.value) || 0)}
-                    className="w-24 px-2 py-1 bg-white border border-[#E8E6DF] rounded-lg text-xs font-bold text-[#0F766E]"
+                    className="w-24 px-2 py-1 bg-white border border-[#E8E6DF] rounded-lg text-xs font-bold text-blue-600"
                   />
-                  <span className="text-xs text-[#64748B]">₹</span>
+                  <span className="text-xs text-gray-500">₹</span>
                 </div>
               )}
             </div>
@@ -309,7 +309,7 @@ export const AddResourceModal: React.FC<AddResourceModalProps> = ({ isOpen, onCl
 
           <button
             type="submit"
-            className="w-full py-3 bg-[#0F766E] hover:bg-[#0b5751] text-white text-sm font-semibold rounded-xl shadow-xs transition-colors cursor-pointer mt-4"
+            className="w-full py-3 bg-blue-600 hover:bg-[#0b5751] text-white text-sm font-semibold rounded-xl shadow-xs transition-colors cursor-pointer mt-4"
           >
             Publish to VenueX Marketplace
           </button>

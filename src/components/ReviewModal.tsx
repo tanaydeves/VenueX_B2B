@@ -68,12 +68,12 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-[#E8E6DF] relative animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-[#E8E6DF] relative animate-in fade-in zoom-in-95 duration-150">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-[#64748B] hover:bg-[#F4F3EF] transition-colors cursor-pointer"
+          className="absolute top-5 right-5 p-2 rounded-full text-gray-500 hover:bg-[#F4F3EF] transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -81,20 +81,20 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
         {!submitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-[#1E293B]">Leave Peer Feedback</h2>
-              <p className="text-xs text-[#64748B] mt-0.5">
-                Rate your hospitality rental experience with <strong className="text-[#1E293B]">{targetBizName}</strong>
+              <h2 className="text-xl font-bold text-gray-900">Leave Peer Feedback</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Rate your hospitality rental experience with <strong className="text-gray-900">{targetBizName}</strong>
               </p>
             </div>
 
-            <div className="p-3 bg-[#FAF9F6] rounded-2xl border border-[#E8E6DF] text-xs">
-              <span className="text-[#64748B] block">Rental Resource</span>
-              <span className="font-bold text-[#1E293B]">{booking.quantity}x {booking.resourceName}</span>
+            <div className="p-3 bg-gray-50 rounded-lg border border-[#E8E6DF] text-xs">
+              <span className="text-gray-500 block">Rental Resource</span>
+              <span className="font-bold text-gray-900">{booking.quantity}x {booking.resourceName}</span>
             </div>
 
             {/* Star Rating Picker */}
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-2 text-center">
+              <label className="block text-xs font-semibold text-gray-900 mb-2 text-center">
                 Overall Satisfaction Rating
               </label>
               <div className="flex items-center justify-center gap-2">
@@ -117,14 +117,14 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
                   </button>
                 ))}
               </div>
-              <div className="text-center text-xs font-bold text-[#0F766E] mt-1">
+              <div className="text-center text-xs font-bold text-blue-600 mt-1">
                 {rating === 5 ? 'Exceptional (5/5)' : rating === 4 ? 'Very Good (4/5)' : rating === 3 ? 'Satisfactory (3/5)' : 'Needs Improvement'}
               </div>
             </div>
 
             {/* Comment Box */}
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+              <label className="block text-xs font-semibold text-gray-900 mb-1">
                 Detailed Feedback (Equipment condition, punctuality, packaging)
               </label>
               <textarea
@@ -133,14 +133,14 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
                 placeholder="e.g. Chairs were spotless, arrived on time via Porter with protective covers, great communication throughout..."
                 value={comment}
                 onChange={e => setComment(e.target.value)}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs text-[#1E293B] focus:outline-none focus:border-[#0F766E]"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs text-gray-900 focus:outline-none focus:border-blue-600"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting || !comment.trim()}
-              className="w-full py-2.5 bg-[#0F766E] hover:bg-[#0b5751] disabled:opacity-50 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+              className="w-full py-2.5 bg-blue-600 hover:bg-[#0b5751] disabled:opacity-50 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
             >
               {isSubmitting ? 'Submitting Review...' : 'Submit Rating'}
             </button>
@@ -150,8 +150,8 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
             <div className="w-12 h-12 rounded-full bg-[#EBF6F2] text-[#2A6D58] flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-bold text-[#1E293B]">Feedback Recorded</h3>
-            <p className="text-xs text-[#64748B]">
+            <h3 className="text-base font-bold text-gray-900">Feedback Recorded</h3>
+            <p className="text-xs text-gray-500">
               Thank you for strengthening the trust network in Navi Mumbai!
             </p>
           </div>

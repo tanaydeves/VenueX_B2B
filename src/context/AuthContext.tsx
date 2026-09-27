@@ -6,7 +6,7 @@ interface AuthContextType {
   currentUser: BusinessProfile | null;
   activeRole: 'SEEKER' | 'PROVIDER';
   allBusinesses: BusinessProfile[];
-  login: (email: string, password?: string) => Promise<boolean>;
+  login: (email: string, gstin: string, password?: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
   signup: (profile: Omit<BusinessProfile, 'id' | 'createdAt' | 'rating' | 'reviewsCount'>) => Promise<BusinessProfile>;
   logout: () => void;
   switchUser: (businessId: string) => Promise<void>;
@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const businesses = await db.getBusinesses();
     setAllBusinesses(businesses);
 
-    const savedUserId = localStorage.getItem('venuex_active_user_id');
+    const savedUserId = sessionStorage.getItem('venuex_active_user_id') || localStorage.getItem('venuex_active_user_id');
     const matchedUser = businesses.find(b => b.id === savedUserId);
 
     if (matchedUser) {
@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveRole('SEEKER');
     }
 
-    const savedRole = localStorage.getItem('venuex_active_role') as 'SEEKER' | 'PROVIDER' | null;
+    const savedRole = (sessionStorage.getItem('venuex_active_role') || localStorage.getItem('venuex_active_role')) as 'SEEKER' | 'PROVIDER' | null;
     if (savedRole) {
       setActiveRole(savedRole);
     }
@@ -60,17 +60,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string): Promise<boolean> => {
+  const login = async (email: string, gstin: string, password?: string, rememberMe: boolean = false): Promise<{ success: boolean; error?: string }> => {
     const businesses = await db.getBusinesses();
-    const found = businesses.find(b => b.email.toLowerCase() === email.toLowerCase());
-    if (found) {
-      setCurrentUser(found);
-      localStorage.setItem('venuex_active_user_id', found.id);
-      if (found.role === 'PROVIDER') setActiveRole('PROVIDER');
-      else if (found.role === 'SEEKER') setActiveRole('SEEKER');
-      return true;
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanGstin = gstin.trim().toUpperCase();
+
+    if (!cleanEmail) {
+      return { success: false, error: 'Please enter your registered Business Work Email.' };
     }
-    return false;
+    if (!cleanGstin) {
+      return { success: false, error: 'Please enter your 15-character GSTIN / Trade License Number.' };
+    }
+    if (!password) {
+      return { success: false, error: 'Please enter your password.' };
+    }
+
+    const matchedEmailBiz = businesses.find(b => b.email.toLowerCase() === cleanEmail);
+    if (!matchedEmailBiz) {
+      return { success: false, error: 'No registered business account found matching this Work Email.' };
+    }
+
+    // Check Password
+    if (matchedEmailBiz.password) {
+      if (matchedEmailBiz.password !== password) {
+        return { success: false, error: 'Incorrect password.' };
+      }
+    } else {
+      // Default fallback for legacy accounts without a password
+      if (password !== 'password123') {
+        return { success: false, error: 'Incorrect password. (Hint: default is password123)' };
+      }
+    }
+
+    // Check GSTIN Dual Verification
+    if (matchedEmailBiz.gstin.trim().toUpperCase() !== cleanGstin) {
+      return { 
+        success: false, 
+        error: `Dual verification failed: Entered GSTIN (${cleanGstin}) does not match the GSTIN registered on file for ${matchedEmailBiz.name}.` 
+      };
+    }
+
+    setCurrentUser(matchedEmailBiz);
+    
+    if (rememberMe) {
+      localStorage.setItem('venuex_active_user_id', matchedEmailBiz.id);
+      sessionStorage.removeItem('venuex_active_user_id');
+    } else {
+      sessionStorage.setItem('venuex_active_user_id', matchedEmailBiz.id);
+      localStorage.removeItem('venuex_active_user_id');
+    }
+
+    if (matchedEmailBiz.role === 'PROVIDER') setActiveRole('PROVIDER');
+    else if (matchedEmailBiz.role === 'SEEKER') setActiveRole('SEEKER');
+    return { success: true };
   };
 
   const signup = async (profileData: Omit<BusinessProfile, 'id' | 'createdAt' | 'rating' | 'reviewsCount'>): Promise<BusinessProfile> => {
@@ -83,13 +125,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     await db.saveBusiness(newProfile);
     setCurrentUser(newProfile);
-    localStorage.setItem('venuex_active_user_id', newProfile.id);
+    sessionStorage.setItem('venuex_active_user_id', newProfile.id);
+    localStorage.removeItem('venuex_active_user_id');
     setActiveRole(newProfile.role === 'PROVIDER' ? 'PROVIDER' : 'SEEKER');
     return newProfile;
   };
 
   const logout = () => {
     localStorage.removeItem('venuex_active_user_id');
+    sessionStorage.removeItem('venuex_active_user_id');
+    localStorage.removeItem('venuex_active_role');
+    sessionStorage.removeItem('venuex_active_role');
     setCurrentUser(null);
   };
 
@@ -97,13 +143,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const biz = await db.getBusinessById(businessId);
     if (biz) {
       setCurrentUser(biz);
-      localStorage.setItem('venuex_active_user_id', biz.id);
+      
+      const isPersistent = !!localStorage.getItem('venuex_active_user_id');
+      if (isPersistent) {
+        localStorage.setItem('venuex_active_user_id', biz.id);
+      } else {
+        sessionStorage.setItem('venuex_active_user_id', biz.id);
+      }
+
       if (biz.role === 'PROVIDER') {
         setActiveRole('PROVIDER');
-        localStorage.setItem('venuex_active_role', 'PROVIDER');
+        if (isPersistent) localStorage.setItem('venuex_active_role', 'PROVIDER');
+        else sessionStorage.setItem('venuex_active_role', 'PROVIDER');
       } else if (biz.role === 'SEEKER') {
         setActiveRole('SEEKER');
-        localStorage.setItem('venuex_active_role', 'SEEKER');
+        if (isPersistent) localStorage.setItem('venuex_active_role', 'SEEKER');
+        else sessionStorage.setItem('venuex_active_role', 'SEEKER');
       }
     }
   };
@@ -111,14 +166,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const toggleActiveRole = () => {
     setActiveRole(prev => {
       const next = prev === 'SEEKER' ? 'PROVIDER' : 'SEEKER';
-      localStorage.setItem('venuex_active_role', next);
+      const isPersistent = !!localStorage.getItem('venuex_active_user_id');
+      if (isPersistent) localStorage.setItem('venuex_active_role', next);
+      else sessionStorage.setItem('venuex_active_role', next);
       return next;
     });
   };
 
   const handleSetActiveRole = (role: 'SEEKER' | 'PROVIDER') => {
     setActiveRole(role);
-    localStorage.setItem('venuex_active_role', role);
+    const isPersistent = !!localStorage.getItem('venuex_active_user_id');
+    if (isPersistent) localStorage.setItem('venuex_active_role', role);
+    else sessionStorage.setItem('venuex_active_role', role);
   };
 
   return (

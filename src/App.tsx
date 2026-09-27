@@ -13,6 +13,7 @@ import { ChatNegotiationModal } from './components/ChatNegotiationModal';
 import { DepositPaymentModal } from './components/DepositPaymentModal';
 import { DeliveryTrackingModal } from './components/DeliveryTrackingModal';
 import { ReviewModal } from './components/ReviewModal';
+import { WeatherDigitalTwinModal } from './components/WeatherDigitalTwinModal';
 import { ResourceListing, ResourceRequest, DealRecord } from './types';
 import { db } from './db/database';
 
@@ -40,6 +41,8 @@ function MainApp() {
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [activeReviewBookingId, setActiveReviewBookingId] = useState<string>('');
+
+  const [globalWeatherTwinOpen, setGlobalWeatherTwinOpen] = useState(false);
 
   const handleNavigate = (view: string, params?: any) => {
     if (params?.openAddModal) {
@@ -253,17 +256,18 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-[#1E293B] flex flex-col font-['Plus_Jakarta_Sans']">
+    <div className="min-h-screen flex flex-col font-outfit relative">
       
       {/* Top Application Bar */}
       <TopNavBar
         currentView={currentView}
         onNavigate={handleNavigate}
         onOpenAuth={handleOpenAuth}
+        onOpenWeatherTwin={() => setGlobalWeatherTwinOpen(true)}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto pt-24 pb-6">
         {currentView === 'landing' && (
           <LandingPage
             onNavigate={handleNavigate}
@@ -358,6 +362,11 @@ function MainApp() {
         bookingId={activeReviewBookingId}
         onClose={() => setReviewModalOpen(false)}
         onSuccess={() => {}}
+      />
+
+      <WeatherDigitalTwinModal
+        isOpen={globalWeatherTwinOpen}
+        onClose={() => setGlobalWeatherTwinOpen(false)}
       />
 
     </div>

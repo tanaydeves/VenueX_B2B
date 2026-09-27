@@ -1,0 +1,15 @@
+{
+  "alignmentName": "venuex-hospitality-domain-v1",
+  "baseModelId": "meta-llama/Meta-Llama-3-8B-Instruct",
+  "documentIds": [
+    "doc-venuex-corpus-1-01_resource_categories_and_use_cases_md",
+    "doc-venuex-corpus-2-02_match_scoring_and_compatibility_logic_md",
+    "doc-venuex-corpus-3-03_negotiation_deal_mechanics_and_tone_md",
+    "doc-venuex-corpus-4-04_weather_impact_and_digital_twin_simulation_md",
+    "doc-venuex-corpus-5-05_hospitality_sla_and_contingency_protocols_md"
+  ],
+  "alignmentId": "align-venuex-1790461948861",
+  "alignedModelId": "venuex-domain-aligned-meta-llama-3-8b-instruct-v1",
+  "status": "COMPLETED",
+  "updatedAt": "2026-09-26T22:32:28.862Z"
+}

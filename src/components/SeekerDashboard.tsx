@@ -19,6 +19,7 @@ import {
   Layers
 } from 'lucide-react';
 import { computeMatchScore } from '../utils/matchingEngine';
+import { SeekerTokenWidget } from './SeekerTokenWidget';
 
 interface SeekerDashboardProps {
   onNavigate: (view: string, params?: any) => void;
@@ -86,10 +87,10 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>Seeker Operations Hub Active · {currentUser?.name}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Hospitality Equipment & Space Manager
           </h1>
-          <p className="text-sm text-[#64748B] mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Real-time tracking of temporary rentals, incoming peer transfers, and dockside deliveries.
           </p>
         </div>
@@ -97,7 +98,7 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={() => onNavigate('search')}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#0F766E] hover:bg-[#0b5751] text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-[#0b5751] text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <Search className="w-4 h-4" />
             <span>+ Request Equipment or Space</span>
@@ -105,13 +106,20 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
         </div>
       </section>
 
+      {/* Seeker Delivery Token (D.T.) Balance & Top-Up Widget */}
+      {currentUser && (
+        <section>
+          <SeekerTokenWidget seekerId={currentUser.id} />
+        </section>
+      )}
+
       {/* Active Attention Banner (Primary Notice) */}
       {activeBooking && (
-        <section className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E8E6DF] soft-shadow relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#0F766E]"></div>
+        <section className="bg-white rounded-lg p-5 sm:p-6 border border-[#E8E6DF] soft-shadow relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600"></div>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-start gap-4 pl-2">
-              <div className="w-12 h-12 rounded-xl bg-[#E6F4F1] flex-shrink-0 flex items-center justify-center text-[#0F766E]">
+              <div className="w-12 h-12 rounded-xl bg-[#E6F4F1] flex-shrink-0 flex items-center justify-center text-blue-600">
                 <Truck className="w-6 h-6" />
               </div>
               <div>
@@ -119,14 +127,14 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#FEF7EE] text-[#A15325]">
                     Status: {activeBooking.deliveryStatus.replace('_', ' ')}
                   </span>
-                  <span className="text-xs text-[#94A3B8]">
+                  <span className="text-xs text-gray-400">
                     Dock Bay: Vashi / Belapur Hub
                   </span>
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-[#1E293B] mt-1">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900 mt-1">
                   {activeBooking.quantity}x {activeBooking.resourceName}
                 </h2>
-                <p className="text-xs text-[#64748B] mt-0.5">
+                <p className="text-xs text-gray-500 mt-0.5">
                   Confirmed rental from {activeBooking.providerName}. Logistics powered by Porter ({activeBooking.deliveryTracking.driverName} • {activeBooking.deliveryTracking.vehicleNumber}).
                 </p>
               </div>
@@ -135,7 +143,7 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
             <div className="flex items-center gap-2.5 w-full md:w-auto justify-end pl-2 md:pl-0">
               <button
                 onClick={() => onOpenTracking(activeBooking.id)}
-                className="w-full md:w-auto px-4 py-2 rounded-xl bg-[#E6F4F1] hover:bg-[#d4eee7] text-[#0F766E] text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full md:w-auto px-4 py-2 rounded-xl bg-[#E6F4F1] hover:bg-[#d4eee7] text-blue-600 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Truck className="w-4 h-4" />
                 <span>Track Porter Logistics</span>
@@ -148,50 +156,50 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
       {/* 4 Spacious KPI Blocks */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Active Requests */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Active Requests</span>
-            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-[#0F766E] flex items-center justify-center">
+            <span className="text-xs font-semibold text-gray-500">Active Requests</span>
+            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-blue-600 flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             {activeRequestsCount}
           </div>
-          <p className="text-xs text-[#0F766E] font-medium flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0F766E] inline-block"></span>
+          <p className="text-xs text-blue-600 font-medium flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"></span>
             {requests.length} total submitted
           </p>
         </div>
 
         {/* KPI 2: Upcoming Bookings */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Upcoming Bookings</span>
+            <span className="text-xs font-semibold text-gray-500">Upcoming Bookings</span>
             <div className="w-8 h-8 rounded-lg bg-[#EBF6F2] text-[#2A6D58] flex items-center justify-center">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             {upcomingBookingsCount}
           </div>
-          <p className="text-xs text-[#64748B] truncate">
+          <p className="text-xs text-gray-500 truncate">
             {activeBooking ? `Next: ${activeBooking.quantity} units (${activeBooking.startDate})` : 'No upcoming bookings'}
           </p>
         </div>
 
         {/* KPI 3: Pending Deals */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Pending Deals</span>
+            <span className="text-xs font-semibold text-gray-500">Pending Deals</span>
             <div className="w-8 h-8 rounded-lg bg-[#FEF7EE] text-[#A15325] flex items-center justify-center">
               <MessageSquare className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             {pendingDealsCount}
           </div>
-          <p className="text-xs text-[#64748B] truncate">
+          <p className="text-xs text-gray-500 truncate">
             {deals.some(d => d.status === 'AWAITING_DEPOSIT') 
               ? 'Deal approved! Deposit required' 
               : `${deals.length} total negotiation threads`}
@@ -199,14 +207,14 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
         </div>
 
         {/* KPI 4: Total Spend */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Total Spend (INR)</span>
-            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-[#0F766E] flex items-center justify-center">
+            <span className="text-xs font-semibold text-gray-500">Total Spend (INR)</span>
+            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-blue-600 flex items-center justify-center">
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             ₹{totalSpend.toLocaleString('en-IN')}
           </div>
           <p className="text-xs text-[#2A6D58] font-medium">
@@ -216,63 +224,63 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
       </section>
 
       {/* Operational Exchange Timeline */}
-      <section className="bg-white p-6 rounded-2xl border border-[#E8E6DF] soft-shadow">
+      <section className="bg-white p-6 rounded-lg border border-[#E8E6DF] soft-shadow">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#1E293B]">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">
               Active Dispatch Flow
             </h2>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-gray-500">
               Simple step progression for incoming peer inventory transfers
             </p>
           </div>
-          <span className="text-xs font-semibold text-[#0F766E] bg-[#E6F4F1] px-3 py-1 rounded-full self-start md:self-auto">
+          <span className="text-xs font-semibold text-blue-600 bg-[#E6F4F1] px-3 py-1 rounded-full self-start md:self-auto">
             {activeBooking ? `Order #${activeBooking.id}` : 'Standard Transfer Lifecycle'}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Step 1 */}
-          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#FAF9F6] border border-[#E8E6DF]">
-            <div className="w-7 h-7 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-[#E8E6DF]">
+            <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
               <Check className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#1E293B]">1. Request Sent</p>
-              <p className="text-[11px] text-[#64748B]">Dates & units specified</p>
+              <p className="text-xs font-bold text-gray-900">1. Request Sent</p>
+              <p className="text-[11px] text-gray-500">Dates & units specified</p>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#FAF9F6] border border-[#E8E6DF]">
-            <div className="w-7 h-7 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-[#E8E6DF]">
+            <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
               <Check className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[#1E293B]">2. Reserved & Confirmed</p>
-              <p className="text-[11px] text-[#64748B]">Inventory locked in escrow</p>
+              <p className="text-xs font-bold text-gray-900">2. Reserved & Confirmed</p>
+              <p className="text-[11px] text-gray-500">Inventory locked in escrow</p>
             </div>
           </div>
 
           {/* Step 3 (Current) */}
-          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#E6F4F1] border border-[#0F766E]/30">
-            <div className="w-7 h-7 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-xs font-bold shrink-0 ring-4 ring-[#0F766E]/20">
+          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#E6F4F1] border border-blue-600/30">
+            <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 ring-4 ring-[#0F766E]/20">
               3
             </div>
             <div>
-              <p className="text-xs font-bold text-[#0F766E]">3. Ready for Dock Pickup</p>
-              <p className="text-[11px] text-[#64748B]">Porter courier handover</p>
+              <p className="text-xs font-bold text-blue-600">3. Ready for Dock Pickup</p>
+              <p className="text-[11px] text-gray-500">Porter courier handover</p>
             </div>
           </div>
 
           {/* Step 4 */}
-          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#FAF9F6] border border-[#E8E6DF] opacity-60">
-            <div className="w-7 h-7 rounded-full bg-[#E2E8F0] text-[#64748B] flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="flex items-start gap-3 p-3.5 rounded-xl bg-gray-50 border border-[#E8E6DF] opacity-60">
+            <div className="w-7 h-7 rounded-full bg-[#E2E8F0] text-gray-500 flex items-center justify-center text-xs font-bold shrink-0">
               4
             </div>
             <div>
-              <p className="text-xs font-bold text-[#64748B]">4. Safely Returned</p>
-              <p className="text-[11px] text-[#94A3B8]">Deposit released</p>
+              <p className="text-xs font-bold text-gray-500">4. Safely Returned</p>
+              <p className="text-[11px] text-gray-400">Deposit released</p>
             </div>
           </div>
         </div>
@@ -282,14 +290,14 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Left: Active Requests & Negotiations */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow space-y-4">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#1E293B]">Active Requests & Deals</h2>
-            <span className="text-xs text-[#64748B]">{requests.length} requests</span>
+            <h2 className="text-base font-bold text-gray-900">Active Requests & Deals</h2>
+            <span className="text-xs text-gray-500">{requests.length} requests</span>
           </div>
 
           {requests.length === 0 ? (
-            <div className="text-center py-8 text-[#94A3B8] text-xs">
+            <div className="text-center py-8 text-gray-400 text-xs">
               No active requests currently. Browse resources to submit a request.
             </div>
           ) : (
@@ -297,24 +305,24 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
               {requests.map(req => {
                 const deal = deals.find(d => d.requestId === req.id);
                 return (
-                  <div key={req.id} className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E8E6DF] flex items-center justify-between gap-3">
+                  <div key={req.id} className="p-3.5 bg-gray-50 rounded-xl border border-[#E8E6DF] flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           req.status === 'ACCEPTED' ? 'bg-[#EBF6F2] text-[#2A6D58]' :
                           req.status === 'COUNTERED' ? 'bg-[#FEF7EE] text-[#A15325]' :
-                          'bg-[#E6F4F1] text-[#0F766E]'
+                          'bg-[#E6F4F1] text-blue-600'
                         }`}>
                           {req.status}
                         </span>
-                        <span className="text-xs text-[#94A3B8]">
+                        <span className="text-xs text-gray-400">
                           {req.startDate} to {req.endDate}
                         </span>
                       </div>
-                      <h4 className="text-xs font-bold text-[#1E293B] truncate mt-1">
+                      <h4 className="text-xs font-bold text-gray-900 truncate mt-1">
                         {req.quantity}x {req.resourceName}
                       </h4>
-                      <p className="text-[11px] text-[#64748B]">
+                      <p className="text-[11px] text-gray-500">
                         Provider: {req.providerName}
                       </p>
                     </div>
@@ -322,7 +330,7 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => onOpenChat(req.id)}
-                        className="px-3 py-1.5 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-[#0F766E] text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                        className="px-3 py-1.5 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-blue-600 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>Chat / Deal</span>
@@ -331,7 +339,7 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
                       {deal && (deal.status === 'AWAITING_DEPOSIT' || deal.status === 'AWAITING_CONFIRMATION') && (
                         <button
                           onClick={() => onOpenPayment(deal.id)}
-                          className="px-3 py-1.5 bg-[#0F766E] hover:bg-[#0b5751] text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-[#0b5751] text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                         >
                           Pay Deposit
                         </button>
@@ -345,33 +353,33 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
         </div>
 
         {/* Right: Confirmed Bookings */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow space-y-4">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-[#1E293B]">Confirmed Bookings</h2>
-            <span className="text-xs text-[#64748B]">{bookings.length} total</span>
+            <h2 className="text-base font-bold text-gray-900">Confirmed Bookings</h2>
+            <span className="text-xs text-gray-500">{bookings.length} total</span>
           </div>
 
           {bookings.length === 0 ? (
-            <div className="text-center py-8 text-[#94A3B8] text-xs">
+            <div className="text-center py-8 text-gray-400 text-xs">
               No confirmed bookings yet.
             </div>
           ) : (
             <div className="space-y-3">
               {bookings.map(book => (
-                <div key={book.id} className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E8E6DF] flex items-center justify-between gap-3">
+                <div key={book.id} className="p-3.5 bg-gray-50 rounded-xl border border-[#E8E6DF] flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EBF6F2] text-[#2A6D58]">
                         {book.bookingStatus}
                       </span>
-                      <span className="text-xs text-[#64748B] font-mono">
+                      <span className="text-xs text-gray-500 font-mono">
                         ₹{book.totalPaid.toLocaleString('en-IN')} paid
                       </span>
                     </div>
-                    <h4 className="text-xs font-bold text-[#1E293B] truncate mt-1">
+                    <h4 className="text-xs font-bold text-gray-900 truncate mt-1">
                       {book.quantity}x {book.resourceName}
                     </h4>
-                    <p className="text-[11px] text-[#64748B]">
+                    <p className="text-[11px] text-gray-500">
                       From {book.providerName} · {book.startDate}
                     </p>
                   </div>
@@ -379,7 +387,7 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => onOpenTracking(book.id)}
-                      className="px-3 py-1.5 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-[#0F766E] text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                      className="px-3 py-1.5 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-blue-600 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1"
                     >
                       <Truck className="w-3.5 h-3.5" />
                       <span>Tracking</span>
@@ -405,16 +413,16 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-[#1E293B]">
+            <h2 className="text-xl font-bold text-gray-900">
               Recommended for Your Upcoming Events
             </h2>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-gray-500">
               Pre-vetted items with high compatibility from nearby trusted hospitality peers in Navi Mumbai
             </p>
           </div>
           <button
             onClick={() => onNavigate('search')}
-            className="text-xs font-semibold text-[#0F766E] hover:text-[#0b5751] flex items-center gap-1 cursor-pointer"
+            className="text-xs font-semibold text-blue-600 hover:text-[#0b5751] flex items-center gap-1 cursor-pointer"
           >
             <span>See all listings</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -441,7 +449,7 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
             return (
               <article
                 key={res.id}
-                className="bg-white rounded-2xl p-4 border border-[#E8E6DF] soft-shadow hover:shadow-md transition-all flex flex-col justify-between group"
+                className="bg-white rounded-lg p-4 border border-[#E8E6DF] soft-shadow hover:shadow-md transition-all flex flex-col justify-between group"
               >
                 <div>
                   <div className="relative w-full h-44 rounded-xl overflow-hidden mb-3 bg-[#F4F3EF]">
@@ -451,35 +459,35 @@ export const SeekerDashboard: React.FC<SeekerDashboardProps> = ({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       referrerPolicy="no-referrer"
                     />
-                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 rounded-full text-xs font-bold text-[#0F766E] shadow-xs flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#0F766E]"></span>
+                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 rounded-full text-xs font-bold text-blue-600 shadow-xs flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                       {matchInfo.score}% Match
                     </div>
-                    <div className="absolute bottom-3 right-3 bg-[#1E293B]/80 backdrop-blur-xs text-white text-[11px] px-2 py-0.5 rounded-lg flex items-center gap-1">
+                    <div className="absolute bottom-3 right-3 bg-[#0B1220]/80 backdrop-blur-xs text-white text-[11px] px-2 py-0.5 rounded-lg flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-[#E6F4F1]" />
                       {res.distanceKm} km away ({res.location.split(',')[0]})
                     </div>
                   </div>
 
-                  <h3 className="text-sm font-bold text-[#1E293B] group-hover:text-[#0F766E] transition-colors">
+                  <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                     {res.name}
                   </h3>
-                  <p className="text-xs text-[#64748B] mt-1 line-clamp-2">
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                     {matchInfo.explanation}
                   </p>
                 </div>
 
                 <div className="pt-3 mt-3 border-t border-[#F4F3EF] flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-[#94A3B8] block">Daily Rate</span>
-                    <span className="text-sm font-bold text-[#1E293B] font-mono">
+                    <span className="text-[10px] text-gray-400 block">Daily Rate</span>
+                    <span className="text-sm font-bold text-gray-900 font-mono">
                       ₹{res.pricePerUnitPerDay.toLocaleString('en-IN')}
-                      <span className="text-[11px] font-normal text-[#64748B]"> / unit</span>
+                      <span className="text-[11px] font-normal text-gray-500"> / unit</span>
                     </span>
                   </div>
                   <button
                     onClick={() => onOpenResource(res.id)}
-                    className="px-3.5 py-1.5 rounded-xl bg-[#E6F4F1] hover:bg-[#0F766E] hover:text-white text-[#0F766E] text-xs font-semibold transition-colors cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#E6F4F1] hover:bg-blue-600 hover:text-white text-blue-600 text-xs font-semibold transition-colors cursor-pointer"
                   >
                     View Details
                   </button>

@@ -20,6 +20,8 @@ import {
   Edit3
 } from 'lucide-react';
 
+import { ProviderSubscriptionWidget } from './ProviderSubscriptionWidget';
+
 interface ProviderDashboardProps {
   onOpenAddResource: () => void;
   onOpenChat: (requestId: string) => void;
@@ -130,14 +132,14 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
       {/* Header and Add Action */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4F1] text-[#0F766E] text-xs font-semibold mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4F1] text-blue-600 text-xs font-semibold mb-2">
             <Building2 className="w-3.5 h-3.5" />
             <span>Provider Asset Management Hub · {currentUser?.name}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Hospitality Resource Provider Center
           </h1>
-          <p className="text-sm text-[#64748B] mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Monetize idle banquet seating, kitchen space, AV equipment, and commercial transport.
           </p>
         </div>
@@ -145,7 +147,7 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenAddResource}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#0F766E] hover:bg-[#0b5751] text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-[#0b5751] text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>+ List New Resource</span>
@@ -153,50 +155,57 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
         </div>
       </section>
 
+      {/* Provider Enterprise Subscription & Financial Ledger Widget */}
+      {currentUser && (
+        <section>
+          <ProviderSubscriptionWidget providerId={currentUser.id} />
+        </section>
+      )}
+
       {/* 4 KPI Summary Blocks */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Active Resources */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Active Resources</span>
-            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-[#0F766E] flex items-center justify-center">
+            <span className="text-xs font-semibold text-gray-500">Active Resources</span>
+            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-blue-600 flex items-center justify-center">
               <Layers className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             {activeResourcesCount}
           </div>
-          <p className="text-xs text-[#0F766E] font-medium flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0F766E] inline-block"></span>
+          <p className="text-xs text-blue-600 font-medium flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 inline-block"></span>
             {totalCapacity} total units published
           </p>
         </div>
 
         {/* KPI 2: Active Bookings */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Active Bookings</span>
+            <span className="text-xs font-semibold text-gray-500">Active Bookings</span>
             <div className="w-8 h-8 rounded-lg bg-[#EBF6F2] text-[#2A6D58] flex items-center justify-center">
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             {activeBookingsCount}
           </div>
-          <p className="text-xs text-[#64748B] truncate">
+          <p className="text-xs text-gray-500 truncate">
             {totalBookedUnits} units currently reserved
           </p>
         </div>
 
         {/* KPI 3: Revenue (₹) */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Rental Revenue</span>
+            <span className="text-xs font-semibold text-gray-500">Rental Revenue</span>
             <div className="w-8 h-8 rounded-lg bg-[#FEF7EE] text-[#A15325] flex items-center justify-center">
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             ₹{totalRevenue.toLocaleString('en-IN')}
           </div>
           <p className="text-xs text-[#2A6D58] font-medium">
@@ -205,40 +214,40 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
         </div>
 
         {/* KPI 4: Utilization % */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
+        <div className="bg-white p-5 rounded-lg border border-[#E8E6DF] soft-shadow hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-[#64748B]">Asset Utilization</span>
-            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-[#0F766E] flex items-center justify-center">
+            <span className="text-xs font-semibold text-gray-500">Asset Utilization</span>
+            <div className="w-8 h-8 rounded-lg bg-[#E6F4F1] text-blue-600 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-bold text-[#1E293B] font-mono tabular-nums mb-1">
+          <div className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums mb-1">
             {utilizationPercent}%
           </div>
-          <p className="text-xs text-[#0F766E] font-medium">
+          <p className="text-xs text-blue-600 font-medium">
             Active demand across Navi Mumbai
           </p>
         </div>
       </section>
 
       {/* Incoming Requests List */}
-      <section className="bg-white p-6 rounded-3xl border border-[#E8E6DF] soft-shadow space-y-4">
+      <section className="bg-white p-6 rounded-xl border border-[#E8E6DF] soft-shadow space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#1E293B]">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">
               Incoming Rental Requests
             </h2>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-gray-500">
               Review booking proposals from verified hospitality peers
             </p>
           </div>
-          <span className="text-xs font-semibold text-[#0F766E] bg-[#E6F4F1] px-3 py-1 rounded-full">
+          <span className="text-xs font-semibold text-blue-600 bg-[#E6F4F1] px-3 py-1 rounded-full">
             {requests.length} total
           </span>
         </div>
 
         {requests.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#94A3B8]">
+          <div className="py-8 text-center text-xs text-gray-400">
             No incoming requests currently. Your resources are visible in search results.
           </div>
         ) : (
@@ -248,7 +257,7 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
               return (
                 <div
                   key={req.id}
-                  className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#E8E6DF] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="p-4 bg-gray-50 rounded-lg border border-[#E8E6DF] flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -256,28 +265,28 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
                         req.status === 'ACCEPTED' ? 'bg-[#EBF6F2] text-[#2A6D58]' :
                         req.status === 'COUNTERED' ? 'bg-[#FEF7EE] text-[#A15325]' :
                         req.status === 'REJECTED' ? 'bg-red-50 text-red-700' :
-                        'bg-[#E6F4F1] text-[#0F766E]'
+                        'bg-[#E6F4F1] text-blue-600'
                       }`}>
                         {req.status}
                       </span>
-                      <span className="text-xs font-bold text-[#1E293B]">
+                      <span className="text-xs font-bold text-gray-900">
                         {req.seekerName}
                       </span>
-                      <span className="text-xs text-[#94A3B8]">
+                      <span className="text-xs text-gray-400">
                         ({req.seekerLocation})
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-[#1E293B]">
+                    <h3 className="text-sm font-bold text-gray-900">
                       Request for {req.quantity}x {req.resourceName}
                     </h3>
 
-                    <p className="text-xs text-[#64748B]">
-                      Dates: <strong className="text-[#1E293B]">{req.startDate} to {req.endDate}</strong> ({req.rentalDays} days) • Delivery: {req.deliveryRequired ? 'Required by Seeker' : 'Self Pickup'}
+                    <p className="text-xs text-gray-500">
+                      Dates: <strong className="text-gray-900">{req.startDate} to {req.endDate}</strong> ({req.rentalDays} days) • Delivery: {req.deliveryRequired ? 'Required by Seeker' : 'Self Pickup'}
                     </p>
 
                     {req.notes && (
-                      <p className="text-xs text-[#64748B] italic">
+                      <p className="text-xs text-gray-500 italic">
                         "{req.notes}"
                       </p>
                     )}
@@ -287,7 +296,7 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => onOpenChat(req.id)}
-                      className="px-3.5 py-2 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-[#0F766E] text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                      className="px-3.5 py-2 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-blue-600 text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span>Negotiate / Deal</span>
@@ -297,7 +306,7 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
                       <>
                         <button
                           onClick={() => handleAcceptRequest(req)}
-                          className="px-3.5 py-2 bg-[#0F766E] hover:bg-[#0b5751] text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1"
+                          className="px-3.5 py-2 bg-blue-600 hover:bg-[#0b5751] text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1"
                         >
                           <Check className="w-3.5 h-3.5" />
                           <span>Accept</span>
@@ -320,26 +329,26 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
       </section>
 
       {/* Manage Resources List */}
-      <section className="bg-white p-6 rounded-3xl border border-[#E8E6DF] soft-shadow space-y-4">
+      <section className="bg-white p-6 rounded-xl border border-[#E8E6DF] soft-shadow space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#1E293B]">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">
               Your Published Resources ({resources.length})
             </h2>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-gray-500">
               Manage inventory pricing, units, and availability windows
             </p>
           </div>
           <button
             onClick={onOpenAddResource}
-            className="text-xs font-semibold text-[#0F766E] hover:text-[#0b5751] flex items-center gap-1 cursor-pointer"
+            className="text-xs font-semibold text-blue-600 hover:text-[#0b5751] flex items-center gap-1 cursor-pointer"
           >
             <span>+ Add Listing</span>
           </button>
         </div>
 
         {resources.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#94A3B8]">
+          <div className="py-8 text-center text-xs text-gray-400">
             You have not listed any resources yet. Click "+ List New Resource" above to add your idle items.
           </div>
         ) : (
@@ -347,7 +356,7 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
             {resources.map(res => (
               <div
                 key={res.id}
-                className="bg-[#FAF9F6] rounded-2xl p-4 border border-[#E8E6DF] flex flex-col justify-between space-y-3"
+                className="bg-gray-50 rounded-lg p-4 border border-[#E8E6DF] flex flex-col justify-between space-y-3"
               >
                 <div>
                   <div className="h-32 rounded-xl overflow-hidden mb-3 bg-[#E2E8F0]">
@@ -358,13 +367,13 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
                       referrerPolicy="no-referrer"
                     />
                   </div>
-                  <span className="text-[10px] font-bold text-[#0F766E] uppercase tracking-wider block">
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">
                     {res.category}
                   </span>
-                  <h3 className="text-sm font-bold text-[#1E293B] line-clamp-1 mt-0.5">
+                  <h3 className="text-sm font-bold text-gray-900 line-clamp-1 mt-0.5">
                     {res.name}
                   </h3>
-                  <p className="text-xs text-[#64748B] mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     {res.quantityTotal} units total • ₹{res.pricePerUnitPerDay.toLocaleString('en-IN')}/day
                   </p>
                 </div>
@@ -376,7 +385,7 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
                   </span>
                   <button
                     onClick={() => onOpenResource(res.id)}
-                    className="text-xs text-[#0F766E] font-semibold hover:underline cursor-pointer"
+                    className="text-xs text-blue-600 font-semibold hover:underline cursor-pointer"
                   >
                     View Listing
                   </button>
@@ -388,20 +397,20 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
       </section>
 
       {/* Dispatched Bookings & Porter Deliveries */}
-      <section className="bg-white p-6 rounded-3xl border border-[#E8E6DF] soft-shadow space-y-4">
+      <section className="bg-white p-6 rounded-xl border border-[#E8E6DF] soft-shadow space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#1E293B]">
+            <h2 className="text-base sm:text-lg font-bold text-gray-900">
               Active Bookings & Porter Logistics
             </h2>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-gray-500">
               Live dispatch status of equipment currently rented out
             </p>
           </div>
         </div>
 
         {bookings.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#94A3B8]">
+          <div className="py-8 text-center text-xs text-gray-400">
             No equipment currently out on rental.
           </div>
         ) : (
@@ -409,21 +418,21 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
             {bookings.map(book => (
               <div
                 key={book.id}
-                className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#E8E6DF] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-4 bg-gray-50 rounded-lg border border-[#E8E6DF] flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EBF6F2] text-[#2A6D58]">
                       {book.bookingStatus}
                     </span>
-                    <span className="text-xs text-[#64748B]">
-                      Delivery: <strong className="text-[#0F766E]">{book.deliveryStatus}</strong>
+                    <span className="text-xs text-gray-500">
+                      Delivery: <strong className="text-blue-600">{book.deliveryStatus}</strong>
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-[#1E293B] mt-1">
+                  <h4 className="text-sm font-bold text-gray-900 mt-1">
                     {book.quantity}x {book.resourceName}
                   </h4>
-                  <p className="text-xs text-[#64748B]">
+                  <p className="text-xs text-gray-500">
                     Rented to {book.seekerName} ({book.startDate} to {book.endDate}) • ₹{book.subtotalRental.toLocaleString('en-IN')} rental fee
                   </p>
                 </div>
@@ -431,7 +440,7 @@ export const ProviderDashboard: React.FC<ProviderDashboardProps> = ({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onOpenTracking(book.id)}
-                    className="px-3.5 py-2 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-[#0F766E] text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="px-3.5 py-2 bg-white hover:bg-[#E6F4F1] border border-[#E8E6DF] text-blue-600 text-xs font-semibold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Truck className="w-3.5 h-3.5" />
                     <span>View Porter Courier Tracking</span>

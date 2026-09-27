@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { db, subscribeToDatabase } from '../db/database';
 import { BookingRecord, ResourceListing } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { calculateRemainingQuantity } from '../utils/matchingEngine';
+import { calculateRemainingQuantity, computeMatchScore } from '../utils/matchingEngine';
+import { AiMatchExplanationModal } from './AiMatchExplanationModal';
+import { WeatherDigitalTwinModal } from './WeatherDigitalTwinModal';
 import { 
   ArrowLeft, 
   Share2, 
@@ -21,7 +23,10 @@ import {
   Sparkles,
   MessageSquare,
   ArrowRight,
-  IndianRupee
+  IndianRupee,
+  Activity,
+  Cpu,
+  CloudRain
 } from 'lucide-react';
 
 interface ResourceDetailPageProps {
@@ -48,6 +53,10 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
   const [endDate, setEndDate] = useState('2026-10-17');
   const [deliveryRequired, setDeliveryRequired] = useState(true);
 
+  // Modals state
+  const [aiMatchModalOpen, setAiMatchModalOpen] = useState(false);
+  const [weatherTwinModalOpen, setWeatherTwinModalOpen] = useState(false);
+
   const loadData = async () => {
     const [res, books] = await Promise.all([
       db.getResourceById(resourceId),
@@ -69,7 +78,7 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
   if (!resource) {
     return (
       <div className="py-20 text-center">
-        <p className="text-sm text-[#64748B]">Loading resource details...</p>
+        <p className="text-sm text-gray-500">Loading resource details...</p>
       </div>
     );
   }
@@ -95,6 +104,21 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
     ? resource.galleryUrls 
     : [resource.imageUrl];
 
+  const matchResult = computeMatchScore(
+    resource,
+    {
+      category: resource.category,
+      quantity,
+      location: resource.location,
+      startDate,
+      endDate,
+      maxBudget: resource.pricePerUnitPerDay * 1.5,
+      deliveryRequired,
+      sortBy: 'best_match'
+    },
+    allBookings
+  );
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-36">
       
@@ -102,7 +126,7 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
       <div className="flex items-center justify-between pb-2">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 text-[#0F766E] hover:text-[#0b5751] text-xs sm:text-sm font-semibold py-1.5 px-3 rounded-lg hover:bg-[#E6F4F1] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-[#0b5751] text-xs sm:text-sm font-semibold py-1.5 px-3 rounded-lg hover:bg-[#E6F4F1] transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to results</span>
@@ -112,13 +136,13 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
           <button 
             onClick={() => navigator.clipboard?.writeText(window.location.href)}
             aria-label="Share listing"
-            className="p-2 rounded-full bg-white soft-shadow text-[#64748B] hover:text-[#0F766E] transition-colors cursor-pointer"
+            className="p-2 rounded-full bg-white soft-shadow text-gray-500 hover:text-blue-600 transition-colors cursor-pointer"
           >
             <Share2 className="w-4 h-4" />
           </button>
           <button 
             aria-label="Save listing"
-            className="p-2 rounded-full bg-white soft-shadow text-[#64748B] hover:text-[#A15325] transition-colors cursor-pointer"
+            className="p-2 rounded-full bg-white soft-shadow text-gray-500 hover:text-[#A15325] transition-colors cursor-pointer"
           >
             <Bookmark className="w-4 h-4" />
           </button>
@@ -126,7 +150,7 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
       </div>
 
       {/* Main Image Gallery Section */}
-      <section className="relative w-full rounded-3xl overflow-hidden bg-[#F4F3EF] soft-shadow aspect-[16/10] sm:aspect-[21/10]">
+      <section className="relative w-full rounded-xl overflow-hidden bg-[#F4F3EF] soft-shadow aspect-[16/10] sm:aspect-[21/10]">
         <img
           src={gallery[activeImageIndex] || resource.imageUrl}
           alt={resource.name}
@@ -136,8 +160,8 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
 
         {/* Quality Inspected Badge */}
         <div className="absolute top-4 left-4 flex gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[#0F766E] text-xs font-semibold shadow-xs">
-            <ShieldCheck className="w-4 h-4 text-[#0F766E]" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-xs text-blue-600 text-xs font-semibold shadow-xs">
+            <ShieldCheck className="w-4 h-4 text-blue-600" />
             Quality Inspected & Sanitized
           </span>
         </div>
@@ -159,37 +183,37 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
       </section>
 
       {/* Title & Overview Card */}
-      <section className="bg-white rounded-3xl p-6 md:p-8 soft-shadow border border-[#E8E6DF]">
+      <section className="bg-white rounded-xl p-6 md:p-8 soft-shadow border border-[#E8E6DF]">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
           <div className="flex-1 space-y-2">
             
             {/* Quantity-Aware Capacity Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F4F1] text-[#0F766E] text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#0F766E]"></span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F4F1] text-blue-600 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-blue-600"></span>
               <span>{remainingUnits} of {resource.quantityTotal} units currently available</span>
             </div>
 
-            <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B] tracking-tight leading-snug">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-snug">
               {resource.name}
             </h1>
 
-            <p className="text-sm text-[#64748B] leading-relaxed pt-1">
+            <p className="text-sm text-gray-500 leading-relaxed pt-1">
               {resource.description}
             </p>
           </div>
 
           {/* Clean Pricing Highlight */}
-          <div className="bg-[#FAF9F6] rounded-2xl p-4 border border-[#E8E6DF] text-left md:text-right shrink-0">
+          <div className="bg-gray-50 rounded-lg p-4 border border-[#E8E6DF] text-left md:text-right shrink-0">
             <div className="flex items-baseline md:justify-end gap-1">
-              <span className="text-2xl font-bold text-[#0F766E] font-mono">
+              <span className="text-2xl font-bold text-blue-600 font-mono">
                 ₹{resource.pricePerUnitPerDay.toLocaleString('en-IN')}
               </span>
-              <span className="text-xs text-[#64748B]">/ unit / day</span>
+              <span className="text-xs text-gray-500">/ unit / day</span>
             </div>
             <p className="text-[11px] text-[#2A6D58] font-semibold mt-1">
               {resource.depositPercent}% refundable security deposit
             </p>
-            <span className="inline-block mt-2 text-[10px] text-[#64748B] bg-white px-2 py-0.5 rounded border border-[#E8E6DF]">
+            <span className="inline-block mt-2 text-[10px] text-gray-500 bg-white px-2 py-0.5 rounded border border-[#E8E6DF]">
               GST calculated at checkout
             </span>
           </div>
@@ -200,25 +224,68 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
           {resource.specifications.map((spec, i) => (
             <div
               key={i}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAF9F6] text-[#475569] text-xs font-medium border border-[#E8E6DF]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 text-gray-500 text-xs font-medium border border-[#E8E6DF]"
             >
-              <Check className="w-3.5 h-3.5 text-[#0F766E]" />
+              <Check className="w-3.5 h-3.5 text-blue-600" />
               <span>{spec}</span>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Nugen Intelligence Domain Analysis & Digital Twin Shock Panel */}
+      <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white rounded-xl p-5 md:p-6 shadow-md border border-indigo-900 space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
+              <Cpu className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                Nugen Domain-Aligned AI Analysis
+                <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  {matchResult.score}% Compatibility
+                </span>
+              </h3>
+              <p className="text-xs text-gray-400">
+                Model: <code className="font-mono text-gray-300">venuex-hospitality-domain-v1</code> (Aligned from Meta-Llama-3-8B)
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setAiMatchModalOpen(true)}
+              className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Deep Domain Breakdown</span>
+            </button>
+            <button
+              onClick={() => setWeatherTwinModalOpen(true)}
+              className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-white/10 cursor-pointer"
+            >
+              <CloudRain className="w-3.5 h-3.5 text-blue-300" />
+              <span>Weather Shock Test</span>
+            </button>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-300 leading-relaxed">
+          {matchResult.explanation}
+        </p>
+      </section>
+
       {/* Provider Details Card */}
-      <section className="bg-white rounded-3xl p-6 soft-shadow border border-[#E8E6DF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <section className="bg-white rounded-xl p-6 soft-shadow border border-[#E8E6DF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#E6F4F1] flex items-center justify-center text-[#0F766E] font-bold text-xl">
+          <div className="w-14 h-14 rounded-lg bg-[#E6F4F1] flex items-center justify-center text-blue-600 font-bold text-xl">
             <Warehouse className="w-7 h-7" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-[#1E293B]">{resource.providerName}</h3>
-            <div className="flex items-center gap-3 mt-1 text-xs text-[#64748B]">
-              <span className="flex items-center gap-1 font-semibold text-[#1E293B]">
+            <h3 className="text-base font-bold text-gray-900">{resource.providerName}</h3>
+            <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+              <span className="flex items-center gap-1 font-semibold text-gray-900">
                 <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                 {resource.providerRating} ({resource.providerReviewsCount} peer rentals)
               </span>
@@ -237,20 +304,20 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
       </section>
 
       {/* Interactive Reservation Calculator & Calendar */}
-      <section className="bg-white rounded-3xl p-6 md:p-8 soft-shadow border border-[#E8E6DF] space-y-6">
+      <section className="bg-white rounded-xl p-6 md:p-8 soft-shadow border border-[#E8E6DF] space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#F4F3EF]">
           <div>
             <div className="flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-[#0F766E]" />
-              <h2 className="text-base sm:text-lg font-bold text-[#1E293B]">
+              <CalendarIcon className="w-5 h-5 text-blue-600" />
+              <h2 className="text-base sm:text-lg font-bold text-gray-900">
                 Schedule & Booking Configuration
               </h2>
             </div>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5">
               Select desired rental duration and units to compute instant quote
             </p>
           </div>
-          <span className="text-xs font-semibold text-[#0F766E] bg-[#E6F4F1] px-3 py-1 rounded-full self-start sm:self-auto">
+          <span className="text-xs font-semibold text-blue-600 bg-[#E6F4F1] px-3 py-1 rounded-full self-start sm:self-auto">
             Season: {resource.availabilityStartDate} to {resource.availabilityEndDate}
           </span>
         </div>
@@ -258,31 +325,31 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
         {/* Date & Quantity Pickers */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+            <label className="block text-xs font-semibold text-gray-900 mb-1">
               Start Date (Load-in)
             </label>
             <input
               type="date"
               value={startDate}
               onChange={e => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs sm:text-sm text-[#1E293B] focus:outline-none"
+              className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+            <label className="block text-xs font-semibold text-gray-900 mb-1">
               End Date (Strike & Return)
             </label>
             <input
               type="date"
               value={endDate}
               onChange={e => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs sm:text-sm text-[#1E293B] focus:outline-none"
+              className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#1E293B] mb-1">
+            <label className="block text-xs font-semibold text-gray-900 mb-1">
               Quantity ({effectiveQuantity} of {remainingUnits} avail)
             </label>
             <div className="flex items-center gap-2">
@@ -292,17 +359,17 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
                 max={Math.max(1, remainingUnits)}
                 value={quantity}
                 onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs sm:text-sm font-bold text-[#0F766E] focus:outline-none font-mono"
+                className="w-full px-3 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs sm:text-sm font-bold text-blue-600 focus:outline-none font-mono"
               />
-              <span className="text-xs text-[#64748B] shrink-0">units</span>
+              <span className="text-xs text-gray-500 shrink-0">units</span>
             </div>
           </div>
         </div>
 
         {/* Visual Mini Calendar Slot Preview */}
-        <div className="bg-[#FAF9F6] rounded-2xl p-4 border border-[#E8E6DF]">
-          <div className="flex items-center justify-between text-xs text-[#64748B] mb-3">
-            <span className="font-semibold text-[#1E293B]">
+        <div className="bg-gray-50 rounded-lg p-4 border border-[#E8E6DF]">
+          <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+            <span className="font-semibold text-gray-900">
               Selected Window: {startDate} to {endDate} ({diffDays} days)
             </span>
             <span className="text-[#2A6D58] font-bold">
@@ -313,37 +380,37 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
           {/* Simple Visual Day Slots */}
           <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 text-center text-xs">
             <div className="p-2 rounded-lg bg-white border border-[#E8E6DF]">
-              <span className="text-[10px] text-[#94A3B8] block">Day 1</span>
-              <span className="font-semibold text-[#1E293B]">{startDate}</span>
-              <span className="text-[10px] text-[#0F766E] block font-bold mt-1">Load-in</span>
+              <span className="text-[10px] text-gray-400 block">Day 1</span>
+              <span className="font-semibold text-gray-900">{startDate}</span>
+              <span className="text-[10px] text-blue-600 block font-bold mt-1">Load-in</span>
             </div>
-            <div className="p-2 rounded-lg bg-[#E6F4F1] border border-[#0F766E]/20">
-              <span className="text-[10px] text-[#0F766E] block">Day 2</span>
-              <span className="font-semibold text-[#0F766E]">Active Event</span>
-              <span className="text-[10px] text-[#0F766E] block font-bold mt-1">In Use</span>
+            <div className="p-2 rounded-lg bg-[#E6F4F1] border border-blue-600/20">
+              <span className="text-[10px] text-blue-600 block">Day 2</span>
+              <span className="font-semibold text-blue-600">Active Event</span>
+              <span className="text-[10px] text-blue-600 block font-bold mt-1">In Use</span>
             </div>
-            <div className="p-2 rounded-lg bg-[#E6F4F1] border border-[#0F766E]/20">
-              <span className="text-[10px] text-[#0F766E] block">Day 3</span>
-              <span className="font-semibold text-[#0F766E]">Active Event</span>
-              <span className="text-[10px] text-[#0F766E] block font-bold mt-1">In Use</span>
+            <div className="p-2 rounded-lg bg-[#E6F4F1] border border-blue-600/20">
+              <span className="text-[10px] text-blue-600 block">Day 3</span>
+              <span className="font-semibold text-blue-600">Active Event</span>
+              <span className="text-[10px] text-blue-600 block font-bold mt-1">In Use</span>
             </div>
             <div className="p-2 rounded-lg bg-white border border-[#E8E6DF]">
-              <span className="text-[10px] text-[#94A3B8] block">Day 4</span>
-              <span className="font-semibold text-[#1E293B]">{endDate}</span>
+              <span className="text-[10px] text-gray-400 block">Day 4</span>
+              <span className="font-semibold text-gray-900">{endDate}</span>
               <span className="text-[10px] text-[#2A6D58] block font-bold mt-1">Inspection Return</span>
             </div>
           </div>
         </div>
 
         {/* Delivery Options Toggle */}
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-[#FAF9F6] border border-[#E8E6DF]">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-[#E8E6DF]">
           <div className="flex items-center gap-3">
-            <Truck className="w-5 h-5 text-[#0F766E]" />
+            <Truck className="w-5 h-5 text-blue-600" />
             <div>
-              <p className="text-xs sm:text-sm font-bold text-[#1E293B]">
+              <p className="text-xs sm:text-sm font-bold text-gray-900">
                 Porter Loading Dock Delivery & Pickup
               </p>
-              <p className="text-xs text-[#64748B]">
+              <p className="text-xs text-gray-500">
                 {resource.deliveryOptions.deliveryAvailable 
                   ? `Simulated Porter transit within ${resource.deliveryOptions.maxDistanceKm} km (₹${resource.deliveryOptions.flatDeliveryFee.toLocaleString('en-IN')})` 
                   : 'Only venue pickup available'}
@@ -359,30 +426,30 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
                 onChange={e => setDeliveryRequired(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0F766E]"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           )}
         </div>
       </section>
 
       {/* Logistics & Dock Specs */}
-      <section className="bg-white rounded-3xl p-6 md:p-8 soft-shadow border border-[#E8E6DF] space-y-4">
-        <h3 className="text-base font-bold text-[#1E293B] flex items-center gap-2">
-          <Truck className="w-5 h-5 text-[#0F766E]" />
+      <section className="bg-white rounded-xl p-6 md:p-8 soft-shadow border border-[#E8E6DF] space-y-4">
+        <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+          <Truck className="w-5 h-5 text-blue-600" />
           <span>Delivery & Loading Dock Logistics</span>
         </h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E8E6DF]">
-            <h4 className="text-xs font-bold text-[#1E293B]">Packaging & Skid Configuration</h4>
-            <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+          <div className="p-4 rounded-lg bg-gray-50 border border-[#E8E6DF]">
+            <h4 className="text-xs font-bold text-gray-900">Packaging & Skid Configuration</h4>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
               {resource.packagingNotes}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E8E6DF]">
-            <h4 className="text-xs font-bold text-[#1E293B]">Loading Bay & Height Requirements</h4>
-            <p className="text-xs text-[#64748B] mt-1 leading-relaxed">
+          <div className="p-4 rounded-lg bg-gray-50 border border-[#E8E6DF]">
+            <h4 className="text-xs font-bold text-gray-900">Loading Bay & Height Requirements</h4>
+            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
               {resource.loadingDockRequirements}
             </p>
           </div>
@@ -390,12 +457,12 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
       </section>
 
       {/* Protection Terms */}
-      <section className="bg-white rounded-3xl p-6 soft-shadow border border-[#E8E6DF] divide-y divide-[#F4F3EF]">
+      <section className="bg-white rounded-xl p-6 soft-shadow border border-[#E8E6DF] divide-y divide-[#F4F3EF]">
         <div className="pb-3.5 flex items-start gap-3.5">
-          <Lock className="w-5 h-5 text-[#0F766E] shrink-0 mt-0.5" />
+          <Lock className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-xs font-bold text-[#1E293B]">Protected Escrow Payment</h4>
-            <p className="text-xs text-[#64748B]">
+            <h4 className="text-xs font-bold text-gray-900">Protected Escrow Payment</h4>
+            <p className="text-xs text-gray-500">
               Simulated payment is safely held until you inspect and accept the items at delivery.
             </p>
           </div>
@@ -403,10 +470,10 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
         <div className="pt-3.5 flex items-start gap-3.5">
           <ShieldCheck className="w-5 h-5 text-[#2A6D58] shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-xs font-bold text-[#1E293B]">
+            <h4 className="text-xs font-bold text-gray-900">
               {resource.depositPercent}% Refundable Security Deposit (₹{depositAmount.toLocaleString('en-IN')})
             </h4>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-gray-500">
               Released automatically within 24 hours of successful inventory return inspection.
             </p>
           </div>
@@ -420,10 +487,10 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
           {/* Total Breakdown */}
           <div className="w-full sm:w-auto text-left">
             <div className="flex items-baseline gap-2">
-              <span className="text-lg sm:text-xl font-bold text-[#1E293B] font-mono">
+              <span className="text-lg sm:text-xl font-bold text-gray-900 font-mono">
                 Estimated: ₹{estimatedTotal.toLocaleString('en-IN')}
               </span>
-              <span className="text-xs text-[#64748B]">
+              <span className="text-xs text-gray-500">
                 ({effectiveQuantity} units • {diffDays} days)
               </span>
             </div>
@@ -436,15 +503,15 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
             <button
               onClick={() => onStartChatAndNegotiate(resource, effectiveQuantity, startDate, endDate, deliveryRequired)}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#E8E6DF] text-xs sm:text-sm font-semibold text-[#1E293B] hover:bg-[#FAF9F6] transition-colors cursor-pointer"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#E8E6DF] text-xs sm:text-sm font-semibold text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
             >
-              <MessageSquare className="w-4 h-4 text-[#0F766E]" />
+              <MessageSquare className="w-4 h-4 text-blue-600" />
               <span>Chat & Negotiate</span>
             </button>
 
             <button
               onClick={() => onDirectBook(resource, effectiveQuantity, startDate, endDate, deliveryRequired)}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-xl bg-[#0F766E] text-white text-xs sm:text-sm font-semibold hover:bg-[#0b5751] transition-all cursor-pointer shadow-xs active:scale-95"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-xl bg-blue-600 text-white text-xs sm:text-sm font-semibold hover:bg-[#0b5751] transition-all cursor-pointer shadow-xs active:scale-95"
             >
               <span>Book / Reserve</span>
               <ArrowRight className="w-4 h-4" />
@@ -453,6 +520,22 @@ export const ResourceDetailPage: React.FC<ResourceDetailPageProps> = ({
 
         </div>
       </aside>
+
+      {/* Nugen Aligned Modals */}
+      <AiMatchExplanationModal
+        isOpen={aiMatchModalOpen}
+        onClose={() => setAiMatchModalOpen(false)}
+        resource={resource}
+        matchResult={matchResult}
+        requestedQty={effectiveQuantity}
+        requestedDates={{ start: startDate, end: endDate }}
+      />
+
+      <WeatherDigitalTwinModal
+        isOpen={weatherTwinModalOpen}
+        onClose={() => setWeatherTwinModalOpen(false)}
+        selectedResource={resource}
+      />
 
     </div>
   );

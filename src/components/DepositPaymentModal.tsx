@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../db/database';
-import { BookingRecord, DealRecord, DeliveryStatus, PaymentStatus } from '../types';
+import { getPlatformConfig } from '../config/platformConfig';
+import { marketplaceService, FinalizePaymentResult } from '../services/marketplaceService';
+import { BookingRecord, DealRecord } from '../types';
 import { 
   X, 
   ShieldCheck, 
   CheckCircle2, 
-  IndianRupee, 
   CreditCard, 
   Building, 
   Smartphone, 
   Truck, 
   Lock, 
-  ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Coins
 } from 'lucide-react';
 
 interface DepositPaymentModalProps {
@@ -28,135 +29,61 @@ export const DepositPaymentModal: React.FC<DepositPaymentModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const config = getPlatformConfig();
   const [deal, setDeal] = useState<DealRecord | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'UPI (GPay/PhonePe)' | 'Corporate NetBanking (HDFC/ICICI)' | 'Business Credit Card'>('UPI (GPay/PhonePe)');
+  const [paymentMethod, setPaymentMethod] = useState<string>('Corporate NetBanking (HDFC/ICICI)');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
-  const [createdBooking, setCreatedBooking] = useState<BookingRecord | null>(null);
+  const [result, setResult] = useState<FinalizePaymentResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (dealId) {
+    if (dealId && isOpen) {
       db.getDealById(dealId).then(d => {
         setDeal(d);
         setPaymentComplete(false);
+        setResult(null);
+        setErrorMessage(null);
       });
     }
   }, [dealId, isOpen]);
 
   if (!isOpen || !deal) return null;
 
+  const subtotalRental = deal.subtotalRental;
+  const depositAmount = deal.depositAmount;
+  const serviceFeePercent = config.seekerServiceFeePercent;
+  const serviceFeeAmount = Math.round(subtotalRental * (serviceFeePercent / 100));
+  const totalPayable = subtotalRental + depositAmount + serviceFeeAmount;
+
   const handleSimulatePayment = async () => {
     setIsProcessing(true);
+    setErrorMessage(null);
 
-    // Simulate network delay
-    setTimeout(async () => {
-      const txId = `SIM-TXN-${Date.now().toString().slice(-6)}`;
+    try {
+      const res = await marketplaceService.finalizeDealPayment(deal.id, deal.seekerId, paymentMethod);
 
-      // 1. Create Confirmed Booking record
-      const newBooking: BookingRecord = {
-        id: `book-${Date.now().toString().slice(-4)}`,
-        dealId: deal.id,
-        requestId: deal.requestId,
-        seekerId: deal.seekerId,
-        seekerName: deal.seekerName,
-        providerId: deal.providerId,
-        providerName: deal.providerName,
-        resourceId: deal.resourceId,
-        resourceName: deal.resourceName,
-        resourceImage: deal.resourceImage,
-        quantity: deal.quantity,
-        startDate: deal.startDate,
-        endDate: deal.endDate,
-        rentalDays: deal.rentalDays,
-        subtotalRental: deal.subtotalRental,
-        deliveryFee: deal.deliveryFee,
-        depositAmount: deal.depositAmount,
-        totalPaid: deal.totalAmount,
-        paymentStatus: 'SUCCESS',
-        simulatedTransactionId: txId,
-        paymentMethod,
-        paidAt: new Date().toISOString(),
-        bookingStatus: 'CONFIRMED',
-        deliveryStatus: deal.deliveryFee > 0 ? 'PENDING' : 'NOT_REQUIRED',
-        deliveryTracking: {
-          partner: 'Porter',
-          trackingNumber: `PRTR-MUM-${Math.floor(10000 + Math.random() * 90000)}`,
-          driverName: 'Suresh Patil',
-          driverPhone: '+91 98234 11299',
-          vehicleNumber: 'MH-46-BM-7712 (Tata 407 14ft)',
-          currentStepIndex: 0,
-          timeline: [
-            {
-              status: 'PENDING',
-              title: 'Dispatch Requested',
-              description: `Dock pickup requested from ${deal.providerName}. Loading bay confirmed.`,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              completed: true,
-            },
-            {
-              status: 'ASSIGNED',
-              title: 'Porter Vehicle Assigned',
-              description: 'Porter captain Suresh Patil allocated with Tata 407 (MH-46-BM-7712).',
-              timestamp: 'Pending dispatch',
-              completed: false,
-            },
-            {
-              status: 'PICKED_UP',
-              title: 'Loaded at Provider Dock',
-              description: `${deal.quantity} units loaded with protective padding & inspected.`,
-              timestamp: 'Pending dispatch',
-              completed: false,
-            },
-            {
-              status: 'IN_TRANSIT',
-              title: 'In Transit to Destination',
-              description: 'Real-time GPS transit tracking active across Navi Mumbai corridor.',
-              timestamp: 'Pending dispatch',
-              completed: false,
-            },
-            {
-              status: 'DELIVERED',
-              title: 'Delivered & Handover Signed',
-              description: 'Items delivered to seeker loading dock. Deposit held in escrow.',
-              timestamp: 'Pending dispatch',
-              completed: false,
-            },
-          ],
-        },
-        createdAt: new Date().toISOString(),
-      };
-
-      await db.saveBooking(newBooking);
-
-      // 2. Update Deal Record to CONFIRMED
-      await db.saveDeal({
-        ...deal,
-        status: 'CONFIRMED',
-      });
-
-      // 3. Update Request Record to ACCEPTED
-      const req = await db.getRequestById(deal.requestId);
-      if (req) {
-        await db.saveRequest({
-          ...req,
-          status: 'ACCEPTED',
-        });
+      if (res.success && res.booking) {
+        setResult(res);
+        setPaymentComplete(true);
+      } else {
+        setErrorMessage(res.error || 'Simulated payment processing failed.');
       }
-
-      setCreatedBooking(newBooking);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'An error occurred during payment processing.');
+    } finally {
       setIsProcessing(false);
-      setPaymentComplete(true);
-    }, 800);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#E8E6DF] relative animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0B1220]/60 backdrop-blur-xs">
+      <div className="bg-white rounded-xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative animate-in fade-in zoom-in-95 duration-150">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-[#64748B] hover:bg-[#F4F3EF] transition-colors cursor-pointer"
+          className="absolute top-5 right-5 p-2 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -164,62 +91,88 @@ export const DepositPaymentModal: React.FC<DepositPaymentModalProps> = ({
         {!paymentComplete ? (
           <div className="space-y-5">
             
-            {/* Clear Simulated Payment Prototype Notice */}
-            <div className="p-3 bg-[#FEF7EE] rounded-2xl border border-[#A15325]/30 flex items-center gap-2.5 text-[#A15325]">
-              <AlertCircle className="w-5 h-5 shrink-0" />
+            {/* Prototype Payment Warning Banner */}
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-center gap-2.5 text-amber-900">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
               <div className="text-xs">
-                <strong className="block font-bold">Simulated Payment — Prototype</strong>
-                <span>No real money will be charged. This simulates escrow holding and lock of inventory.</span>
+                <div className="flex items-center gap-2 font-bold text-amber-900">
+                  <span className="uppercase tracking-wider">Prototype / Simulated Payment</span>
+                  <span className="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-mono">MVP</span>
+                </div>
+                <span className="text-amber-700">
+                  No real bank funds charged. Simulates line-item ledger records (Rent + Deposit + VenueX Fee).
+                </span>
               </div>
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-[#1E293B]">Confirm Rental & Security Deposit</h2>
-              <p className="text-xs text-[#64748B] mt-0.5">
+              <h2 className="text-xl font-bold text-gray-900">Finalize Deal & Authorize Payment</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
                 Locking reservation for {deal.quantity}x {deal.resourceName}
               </p>
             </div>
 
-            {/* Structured Itemized Breakdown */}
-            <div className="bg-[#FAF9F6] rounded-2xl p-4 border border-[#E8E6DF] space-y-2 text-xs">
-              <div className="flex justify-between text-[#64748B]">
-                <span>Rental Duration</span>
-                <span className="font-semibold text-[#1E293B]">{deal.startDate} to {deal.endDate} ({deal.rentalDays} days)</span>
+            {errorMessage && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
+                {errorMessage}
               </div>
-              <div className="flex justify-between text-[#64748B]">
-                <span>Rental Subtotal ({deal.quantity} units @ ₹{deal.rentalPricePerUnit}/day)</span>
-                <span className="font-mono text-[#1E293B]">₹{deal.subtotalRental.toLocaleString('en-IN')}</span>
+            )}
+
+            {/* Itemized Line Item Breakdown */}
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-2.5 text-xs">
+              <div className="flex justify-between text-gray-600">
+                <span>Rental Period</span>
+                <span className="font-semibold text-gray-900">{deal.startDate} to {deal.endDate} ({deal.rentalDays} days)</span>
               </div>
-              <div className="flex justify-between text-[#64748B]">
-                <span>Porter Delivery & Dispatch Fee</span>
-                <span className="font-mono text-[#1E293B]">₹{deal.deliveryFee.toLocaleString('en-IN')}</span>
+              
+              <div className="flex justify-between text-gray-700 pt-1 border-t border-gray-200/60">
+                <span>1. Rental Subtotal ({deal.quantity} units @ ₹{deal.rentalPricePerUnit}/day)</span>
+                <span className="font-mono font-semibold text-gray-900">₹{subtotalRental.toLocaleString('en-IN')}</span>
               </div>
-              <div className="flex justify-between text-[#2A6D58] font-semibold">
-                <span>Refundable Security Deposit ({deal.depositPercent}%)</span>
-                <span className="font-mono">₹{deal.depositAmount.toLocaleString('en-IN')}</span>
+
+              <div className="flex justify-between text-emerald-800 font-medium">
+                <span>2. Refundable Security Deposit ({deal.depositPercent}%)</span>
+                <span className="font-mono font-bold">₹{depositAmount.toLocaleString('en-IN')}</span>
               </div>
-              <div className="pt-2 border-t border-[#E8E6DF] flex justify-between text-base font-bold text-[#1E293B]">
-                <span>Total Amount to Pay</span>
-                <span className="text-[#0F766E] font-mono">₹{deal.totalAmount.toLocaleString('en-IN')}</span>
+
+              <div className="flex justify-between text-indigo-900 font-medium">
+                <span>3. VenueX Platform Service Fee ({serviceFeePercent}%)</span>
+                <span className="font-mono font-bold">₹{serviceFeeAmount.toLocaleString('en-IN')}</span>
               </div>
+
+              <div className="pt-2.5 border-t border-gray-200 flex justify-between text-base font-extrabold text-gray-900">
+                <span>Total Payable Amount</span>
+                <span className="text-emerald-700 font-mono">₹{totalPayable.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
+            {/* Delivery Token Info Notice */}
+            <div className="p-3 bg-indigo-50/60 border border-indigo-200 rounded-xl flex items-center justify-between text-xs text-indigo-900">
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>Delivery Request consumes <strong>1 Delivery Token (D.T.)</strong></span>
+              </div>
+              <span className="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded">
+                D.T. System
+              </span>
             </div>
 
             {/* Payment Method Selector */}
             <div>
-              <label className="block text-xs font-semibold text-[#1E293B] mb-2">
+              <label className="block text-xs font-semibold text-gray-700 mb-2">
                 Simulated Payment Method
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod('UPI (GPay/PhonePe)')}
+                  onClick={() => setPaymentMethod('UPI Corporate (GPay/PhonePe)')}
                   className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
-                    paymentMethod === 'UPI (GPay/PhonePe)'
-                      ? 'bg-[#E6F4F1] border-[#0F766E] text-[#0F766E] font-bold'
-                      : 'bg-[#FAF9F6] border-[#E8E6DF] text-[#64748B]'
+                    paymentMethod.includes('UPI')
+                      ? 'bg-emerald-50 border-emerald-600 text-emerald-800 font-bold'
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <Smartphone className="w-4 h-4 mx-auto mb-1 text-[#0F766E]" />
+                  <Smartphone className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
                   <span className="text-[11px] block">UPI App</span>
                 </button>
 
@@ -227,12 +180,12 @@ export const DepositPaymentModal: React.FC<DepositPaymentModalProps> = ({
                   type="button"
                   onClick={() => setPaymentMethod('Corporate NetBanking (HDFC/ICICI)')}
                   className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
-                    paymentMethod === 'Corporate NetBanking (HDFC/ICICI)'
-                      ? 'bg-[#E6F4F1] border-[#0F766E] text-[#0F766E] font-bold'
-                      : 'bg-[#FAF9F6] border-[#E8E6DF] text-[#64748B]'
+                    paymentMethod.includes('NetBanking')
+                      ? 'bg-emerald-50 border-emerald-600 text-emerald-800 font-bold'
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <Building className="w-4 h-4 mx-auto mb-1 text-[#0F766E]" />
+                  <Building className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
                   <span className="text-[11px] block">NetBanking</span>
                 </button>
 
@@ -240,36 +193,39 @@ export const DepositPaymentModal: React.FC<DepositPaymentModalProps> = ({
                   type="button"
                   onClick={() => setPaymentMethod('Business Credit Card')}
                   className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
-                    paymentMethod === 'Business Credit Card'
-                      ? 'bg-[#E6F4F1] border-[#0F766E] text-[#0F766E] font-bold'
-                      : 'bg-[#FAF9F6] border-[#E8E6DF] text-[#64748B]'
+                    paymentMethod.includes('Credit Card')
+                      ? 'bg-emerald-50 border-emerald-600 text-emerald-800 font-bold'
+                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <CreditCard className="w-4 h-4 mx-auto mb-1 text-[#0F766E]" />
+                  <CreditCard className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
                   <span className="text-[11px] block">Corporate Card</span>
                 </button>
               </div>
             </div>
 
             {/* Escrow note */}
-            <div className="flex items-center gap-2 text-[11px] text-[#64748B]">
-              <Lock className="w-3.5 h-3.5 text-[#0F766E] shrink-0" />
+            <div className="flex items-center gap-2 text-[11px] text-gray-500">
+              <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               <span>
-                Deposit is held in simulated escrow and released automatically upon clean inspection.
+                Security Deposit held in simulated escrow & auto-released upon clean return inspection.
               </span>
             </div>
 
             <button
               onClick={handleSimulatePayment}
               disabled={isProcessing}
-              className="w-full py-3 bg-[#0F766E] hover:bg-[#0b5751] text-white text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 bg-[#0B1220] hover:bg-[#111827] text-white text-sm font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isProcessing ? (
-                <span>Simulating Escrow Lock...</span>
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Processing Simulated Line Items...</span>
+                </>
               ) : (
                 <>
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Authorize Simulated Payment of ₹{deal.totalAmount.toLocaleString('en-IN')}</span>
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Authorize Simulated Payment of ₹{totalPayable.toLocaleString('en-IN')}</span>
                 </>
               )}
             </button>
@@ -277,49 +233,53 @@ export const DepositPaymentModal: React.FC<DepositPaymentModalProps> = ({
         ) : (
           /* Payment Success & Confirmation State */
           <div className="text-center py-4 space-y-4 animate-in fade-in duration-200">
-            <div className="w-16 h-16 rounded-full bg-[#EBF6F2] text-[#2A6D58] flex items-center justify-center mx-auto shadow-xs">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-xs">
               <CheckCircle2 className="w-10 h-10" />
             </div>
 
             <div>
-              <h2 className="text-xl font-bold text-[#1E293B]">Payment Confirmed & Inventory Locked</h2>
-              <p className="text-xs text-[#64748B] mt-1">
-                Simulated Transaction ID: <strong className="font-mono text-[#1E293B]">{createdBooking?.simulatedTransactionId}</strong>
-              </p>
+              <h2 className="text-xl font-bold text-gray-900">Payment Confirmed & Booking Created</h2>
+              <div className="inline-block text-[11px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded mt-1">
+                PROTOTYPE / SIMULATED PAYMENT SUCCESSFUL
+              </div>
             </div>
 
-            <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#E8E6DF] text-xs text-left space-y-2">
+            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-xs text-left space-y-2">
               <div className="flex justify-between">
-                <span className="text-[#64748B]">Booking Reference:</span>
-                <span className="font-bold text-[#1E293B] font-mono">{createdBooking?.id}</span>
+                <span className="text-gray-500">Simulated Ref ID:</span>
+                <span className="font-bold text-gray-900 font-mono">{result?.simulatedTransactionId}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#64748B]">Locked Units:</span>
-                <span className="font-bold text-[#0F766E]">{deal.quantity} units</span>
+                <span className="text-gray-500">Total Paid:</span>
+                <span className="font-bold text-gray-900 font-mono">₹{result?.totalPaid?.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#64748B]">Porter Delivery:</span>
-                <span className="font-bold text-[#1E293B]">{createdBooking?.deliveryTracking.trackingNumber}</span>
+                <span className="text-gray-500">VenueX Service Fee (5%):</span>
+                <span className="font-semibold text-gray-700 font-mono">₹{result?.serviceFeeAmount?.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Booking Reference:</span>
+                <span className="font-bold text-emerald-700 font-mono">{result?.booking?.id}</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
-              {createdBooking && (
+              {result?.booking && (
                 <button
                   onClick={() => {
-                    onSuccess(createdBooking.id);
+                    onSuccess(result.booking!.id);
                     onClose();
                   }}
-                  className="flex-1 py-2.5 px-4 bg-[#0F766E] hover:bg-[#0b5751] text-white text-xs font-semibold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="flex-1 py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Truck className="w-4 h-4" />
-                  <span>Track Porter Delivery</span>
+                  <span>Manage / Request Porter Delivery</span>
                 </button>
               )}
 
               <button
                 onClick={onClose}
-                className="py-2.5 px-4 bg-white hover:bg-[#FAF9F6] border border-[#E8E6DF] text-[#1E293B] text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                className="py-3 px-4 bg-gray-100 hover:bg-slate-200 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
               >
                 Close
               </button>

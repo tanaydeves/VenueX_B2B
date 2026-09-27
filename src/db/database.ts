@@ -3,14 +3,17 @@ import {
   BusinessProfile,
   ChatMessage,
   DealRecord,
+  DeliveryTokenLedgerEntry,
+  PaymentRecord,
   ProductCategory,
   ResourceListing,
   ResourceRequest,
   ReviewRecord,
+  SubscriptionRecord,
 } from '../types';
 
 const DB_NAME = 'venuex_hospitality_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incremented for new subscription, token ledger, and payment stores
 
 const STORES = [
   'businesses',
@@ -20,6 +23,9 @@ const STORES = [
   'messages',
   'bookings',
   'reviews',
+  'subscriptions',
+  'tokenLedger',
+  'paymentRecords',
 ] as const;
 
 type StoreName = (typeof STORES)[number];
@@ -691,6 +697,188 @@ const SEED_REVIEWS: ReviewRecord[] = [
   },
 ];
 
+const SEED_SUBSCRIPTIONS: SubscriptionRecord[] = [
+  {
+    id: 'sub-grand-horizon',
+    partyId: 'biz-grand-horizon',
+    partyName: 'Grand Horizon Hotel',
+    partyType: 'SEEKER',
+    planName: 'Seeker Pro Pass',
+    status: 'ACTIVE',
+    currentPeriodStart: '2026-09-01T00:00:00.000Z',
+    currentPeriodEnd: '2026-10-01T00:00:00.000Z',
+    autoRenew: true,
+    initialTokenAllocation: 125,
+    pricePaid: 2999,
+    createdAt: '2026-09-01T00:00:00.000Z',
+    updatedAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'sub-apex-centre',
+    partyId: 'biz-apex-centre',
+    partyName: 'Apex Convention Centre',
+    partyType: 'SEEKER',
+    planName: 'Seeker Pro Pass',
+    status: 'ACTIVE',
+    currentPeriodStart: '2026-09-01T00:00:00.000Z',
+    currentPeriodEnd: '2026-10-01T00:00:00.000Z',
+    autoRenew: true,
+    initialTokenAllocation: 125,
+    pricePaid: 2999,
+    createdAt: '2026-09-01T00:00:00.000Z',
+    updatedAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'sub-royal-banquets',
+    partyId: 'biz-royal-banquets',
+    partyName: 'Royal Banquets & Convention',
+    partyType: 'PROVIDER',
+    planName: 'Provider Enterprise Hub',
+    status: 'ACTIVE',
+    currentPeriodStart: '2026-09-01T00:00:00.000Z',
+    currentPeriodEnd: '2026-10-01T00:00:00.000Z',
+    autoRenew: true,
+    initialTokenAllocation: 0,
+    pricePaid: 4999,
+    createdAt: '2026-09-01T00:00:00.000Z',
+    updatedAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'sub-urban-caterers',
+    partyId: 'biz-urban-caterers',
+    partyName: 'Urban Gala Caterers',
+    partyType: 'PROVIDER',
+    planName: 'Provider Enterprise Hub',
+    status: 'ACTIVE',
+    currentPeriodStart: '2026-09-01T00:00:00.000Z',
+    currentPeriodEnd: '2026-10-01T00:00:00.000Z',
+    autoRenew: true,
+    initialTokenAllocation: 0,
+    pricePaid: 4999,
+    createdAt: '2026-09-01T00:00:00.000Z',
+    updatedAt: '2026-09-01T00:00:00.000Z',
+  },
+];
+
+const SEED_TOKEN_LEDGER: DeliveryTokenLedgerEntry[] = [
+  {
+    id: 'tl-gh-01',
+    seekerId: 'biz-grand-horizon',
+    type: 'GRANT',
+    amount: 125,
+    balanceAfter: 125,
+    referenceId: 'sub-grand-horizon',
+    notes: 'Monthly subscription allocation of 125 Delivery Tokens (D.T.)',
+    isSimulated: true,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'tl-gh-02',
+    seekerId: 'biz-grand-horizon',
+    type: 'CONSUME',
+    amount: -1,
+    balanceAfter: 124,
+    referenceId: 'book-1',
+    notes: 'Porter delivery token consumption for booking #book-1',
+    isSimulated: true,
+    createdAt: '2026-09-24T14:05:00.000Z',
+  },
+  {
+    id: 'tl-ac-01',
+    seekerId: 'biz-apex-centre',
+    type: 'GRANT',
+    amount: 125,
+    balanceAfter: 125,
+    referenceId: 'sub-apex-centre',
+    notes: 'Monthly subscription allocation of 125 Delivery Tokens (D.T.)',
+    isSimulated: true,
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+];
+
+const SEED_PAYMENT_RECORDS: PaymentRecord[] = [
+  {
+    id: 'pay-gh-sub',
+    partyId: 'biz-grand-horizon',
+    partyName: 'Grand Horizon Hotel',
+    partyType: 'SEEKER',
+    type: 'SUBSCRIPTION_FEE',
+    amount: 2999,
+    status: 'SUCCESS',
+    referenceId: 'sub-grand-horizon',
+    paymentMethod: 'Corporate NetBanking',
+    simulatedTransactionId: 'SIM-TXN-SUB-98101',
+    isSimulated: true,
+    simulationBadge: 'PROTOTYPE / SIMULATED PAYMENT',
+    description: 'Monthly Seeker Pro Pass Subscription Fee',
+    createdAt: '2026-09-01T00:00:00.000Z',
+  },
+  {
+    id: 'pay-bk1-rent',
+    partyId: 'biz-grand-horizon',
+    partyName: 'Grand Horizon Hotel',
+    partyType: 'SEEKER',
+    type: 'RENT',
+    amount: 36000,
+    status: 'SUCCESS',
+    referenceId: 'deal-001',
+    paymentMethod: 'Corporate NetBanking',
+    simulatedTransactionId: 'SIM-TXN-RENT-44012',
+    isSimulated: true,
+    simulationBadge: 'PROTOTYPE / SIMULATED PAYMENT',
+    description: 'Rental subtotal for 100x Gold Chiavari Chairs (3 days)',
+    createdAt: '2026-09-24T14:00:00.000Z',
+  },
+  {
+    id: 'pay-bk1-deposit',
+    partyId: 'biz-grand-horizon',
+    partyName: 'Grand Horizon Hotel',
+    partyType: 'SEEKER',
+    type: 'DEPOSIT',
+    amount: 5400,
+    status: 'SUCCESS',
+    referenceId: 'deal-001',
+    paymentMethod: 'Corporate NetBanking',
+    simulatedTransactionId: 'SIM-TXN-DEP-44013',
+    isSimulated: true,
+    simulationBadge: 'PROTOTYPE / SIMULATED PAYMENT',
+    description: 'Refundable Security Deposit (15%)',
+    createdAt: '2026-09-24T14:00:00.000Z',
+  },
+  {
+    id: 'pay-bk1-fee',
+    partyId: 'biz-grand-horizon',
+    partyName: 'Grand Horizon Hotel',
+    partyType: 'SEEKER',
+    type: 'SERVICE_FEE',
+    amount: 1800,
+    status: 'SUCCESS',
+    referenceId: 'deal-001',
+    paymentMethod: 'Corporate NetBanking',
+    simulatedTransactionId: 'SIM-TXN-FEE-44014',
+    isSimulated: true,
+    simulationBadge: 'PROTOTYPE / SIMULATED PAYMENT',
+    description: 'VenueX Marketplace Service Fee (5%)',
+    createdAt: '2026-09-24T14:00:00.000Z',
+  },
+  {
+    id: 'pay-bk1-payout',
+    partyId: 'porter-logistics',
+    partyName: 'Porter Express Logistics',
+    partyType: 'LOGISTICS_PARTNER',
+    type: 'DELIVERY_PAYOUT',
+    amount: 1200,
+    status: 'SUCCESS',
+    referenceId: 'book-1',
+    paymentMethod: 'VenueX Platform Payout',
+    simulatedTransactionId: 'SIM-TXN-LOG-88192',
+    isSimulated: true,
+    simulationBadge: 'PROTOTYPE / SIMULATED PAYMENT',
+    description: 'VenueX logistics settlement to Porter driver for booking #book-1',
+    createdAt: '2026-09-24T14:05:00.000Z',
+  },
+];
+
 // Open IndexedDB database instance
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -753,6 +941,9 @@ export async function initializeDatabase(): Promise<void> {
         SEED_MESSAGES.forEach(m => txSeed.objectStore('messages').put(m));
         SEED_BOOKINGS.forEach(b => txSeed.objectStore('bookings').put(b));
         SEED_REVIEWS.forEach(rv => txSeed.objectStore('reviews').put(rv));
+        SEED_SUBSCRIPTIONS.forEach(s => txSeed.objectStore('subscriptions').put(s));
+        SEED_TOKEN_LEDGER.forEach(tl => txSeed.objectStore('tokenLedger').put(tl));
+        SEED_PAYMENT_RECORDS.forEach(pr => txSeed.objectStore('paymentRecords').put(pr));
 
         // Mirror in localStorage
         setLocalStorageStore('businesses', SEED_BUSINESSES);
@@ -762,6 +953,9 @@ export async function initializeDatabase(): Promise<void> {
         setLocalStorageStore('messages', SEED_MESSAGES);
         setLocalStorageStore('bookings', SEED_BOOKINGS);
         setLocalStorageStore('reviews', SEED_REVIEWS);
+        setLocalStorageStore('subscriptions', SEED_SUBSCRIPTIONS);
+        setLocalStorageStore('tokenLedger', SEED_TOKEN_LEDGER);
+        setLocalStorageStore('paymentRecords', SEED_PAYMENT_RECORDS);
 
         txSeed.oncomplete = () => {
           notifySubscribers();
@@ -778,6 +972,9 @@ export async function initializeDatabase(): Promise<void> {
       setLocalStorageStore('messages', SEED_MESSAGES);
       setLocalStorageStore('bookings', SEED_BOOKINGS);
       setLocalStorageStore('reviews', SEED_REVIEWS);
+      setLocalStorageStore('subscriptions', SEED_SUBSCRIPTIONS);
+      setLocalStorageStore('tokenLedger', SEED_TOKEN_LEDGER);
+      setLocalStorageStore('paymentRecords', SEED_PAYMENT_RECORDS);
     }
   }
 }
@@ -933,6 +1130,46 @@ export const db = {
     return saved;
   },
 
+  // Subscriptions
+  async getSubscriptions(): Promise<SubscriptionRecord[]> {
+    return getAllFromStore<SubscriptionRecord>('subscriptions');
+  },
+  async getSubscriptionByParty(partyId: string): Promise<SubscriptionRecord | null> {
+    const list = await this.getSubscriptions();
+    return list.find(s => s.partyId === partyId && s.status === 'ACTIVE') || list.find(s => s.partyId === partyId) || null;
+  },
+  async saveSubscription(sub: SubscriptionRecord): Promise<SubscriptionRecord> {
+    return putToStore<SubscriptionRecord>('subscriptions', sub);
+  },
+
+  // Token Ledger
+  async getTokenLedger(): Promise<DeliveryTokenLedgerEntry[]> {
+    return getAllFromStore<DeliveryTokenLedgerEntry>('tokenLedger');
+  },
+  async getTokenLedgerForSeeker(seekerId: string): Promise<DeliveryTokenLedgerEntry[]> {
+    const list = await this.getTokenLedger();
+    return list
+      .filter(t => t.seekerId === seekerId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+  async saveTokenLedgerEntry(entry: DeliveryTokenLedgerEntry): Promise<DeliveryTokenLedgerEntry> {
+    return putToStore<DeliveryTokenLedgerEntry>('tokenLedger', entry);
+  },
+
+  // Payment Records
+  async getPaymentRecords(): Promise<PaymentRecord[]> {
+    return getAllFromStore<PaymentRecord>('paymentRecords');
+  },
+  async getPaymentRecordsForParty(partyId: string): Promise<PaymentRecord[]> {
+    const list = await this.getPaymentRecords();
+    return list
+      .filter(p => p.partyId === partyId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  },
+  async savePaymentRecord(record: PaymentRecord): Promise<PaymentRecord> {
+    return putToStore<PaymentRecord>('paymentRecords', record);
+  },
+
   // Reset database back to default seed data
   async resetToSeed(): Promise<void> {
     try {
@@ -947,6 +1184,9 @@ export const db = {
       SEED_MESSAGES.forEach(m => tx.objectStore('messages').put(m));
       SEED_BOOKINGS.forEach(b => tx.objectStore('bookings').put(b));
       SEED_REVIEWS.forEach(rv => tx.objectStore('reviews').put(rv));
+      SEED_SUBSCRIPTIONS.forEach(s => tx.objectStore('subscriptions').put(s));
+      SEED_TOKEN_LEDGER.forEach(tl => tx.objectStore('tokenLedger').put(tl));
+      SEED_PAYMENT_RECORDS.forEach(pr => tx.objectStore('paymentRecords').put(pr));
 
       setLocalStorageStore('businesses', SEED_BUSINESSES);
       setLocalStorageStore('resources', SEED_RESOURCES);
@@ -955,6 +1195,9 @@ export const db = {
       setLocalStorageStore('messages', SEED_MESSAGES);
       setLocalStorageStore('bookings', SEED_BOOKINGS);
       setLocalStorageStore('reviews', SEED_REVIEWS);
+      setLocalStorageStore('subscriptions', SEED_SUBSCRIPTIONS);
+      setLocalStorageStore('tokenLedger', SEED_TOKEN_LEDGER);
+      setLocalStorageStore('paymentRecords', SEED_PAYMENT_RECORDS);
 
       tx.oncomplete = () => {
         notifySubscribers();
@@ -967,7 +1210,11 @@ export const db = {
       setLocalStorageStore('messages', SEED_MESSAGES);
       setLocalStorageStore('bookings', SEED_BOOKINGS);
       setLocalStorageStore('reviews', SEED_REVIEWS);
+      setLocalStorageStore('subscriptions', SEED_SUBSCRIPTIONS);
+      setLocalStorageStore('tokenLedger', SEED_TOKEN_LEDGER);
+      setLocalStorageStore('paymentRecords', SEED_PAYMENT_RECORDS);
       notifySubscribers();
     }
   }
 };
+

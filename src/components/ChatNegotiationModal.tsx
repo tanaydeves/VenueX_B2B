@@ -14,8 +14,10 @@ import {
   ShieldCheck, 
   ArrowRight,
   RefreshCw,
-  FileText
+  FileText,
+  Cpu
 } from 'lucide-react';
+import { aiService } from '../services/aiService';
 
 interface ChatNegotiationModalProps {
   isOpen: boolean;
@@ -43,6 +45,24 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
   const [propDepositPercent, setPropDepositPercent] = useState(15);
   const [propDays, setPropDays] = useState(3);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [generatingAiSuggest, setGeneratingAiSuggest] = useState(false);
+
+  const handleGenerateAiSuggestion = async () => {
+    if (!deal || !currentUser) return;
+    setGeneratingAiSuggest(true);
+    const userRole = currentUser.id === request?.providerId ? 'PROVIDER' : 'SEEKER';
+    const lastMsg = messages.length > 0 ? messages[messages.length - 1].text : '';
+    try {
+      const res = await aiService.generateNegotiationSuggestion(deal, lastMsg, userRole);
+      if (res.suggestion) {
+        setInputText(res.suggestion);
+      }
+    } catch (err) {
+      console.error('Error generating negotiation suggestion:', err);
+    } finally {
+      setGeneratingAiSuggest(false);
+    }
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -244,12 +264,12 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl max-w-5xl w-full h-[90vh] shadow-2xl border border-[#E8E6DF] flex flex-col md:flex-row overflow-hidden relative animate-in fade-in duration-150">
+      <div className="bg-white rounded-xl max-w-5xl w-full h-[90vh] shadow-2xl border border-[#E8E6DF] flex flex-col md:flex-row overflow-hidden relative animate-in fade-in duration-150">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/80 hover:bg-[#F4F3EF] text-[#64748B] transition-colors cursor-pointer"
+          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/80 hover:bg-[#F4F3EF] text-gray-500 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -258,29 +278,29 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
         <div className="flex-1 flex flex-col h-full border-r border-[#E8E6DF]">
           
           {/* Chat Header */}
-          <div className="p-4 border-b border-[#E8E6DF] bg-[#FAF9F6] flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#E6F4F1] flex items-center justify-center text-[#0F766E]">
+          <div className="p-4 border-b border-[#E8E6DF] bg-gray-50 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#E6F4F1] flex items-center justify-center text-blue-600">
               <MessageSquare className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-[#1E293B]">
+                <h3 className="text-sm font-bold text-gray-900">
                   Negotiation: {request.resourceName}
                 </h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EBF6F2] text-[#2A6D58]">
                   {deal?.status || 'NEGOTIATING'}
                 </span>
               </div>
-              <p className="text-xs text-[#64748B]">
+              <p className="text-xs text-gray-500">
                 {request.seekerName} ↔ {request.providerName}
               </p>
             </div>
           </div>
 
           {/* Messages Stream */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAF9F6]/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
             {messages.length === 0 ? (
-              <div className="text-center py-12 text-[#94A3B8] text-xs">
+              <div className="text-center py-12 text-gray-400 text-xs">
                 No messages yet. Send a message or update the structured deal parameters on the right.
               </div>
             ) : (
@@ -299,15 +319,15 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                     key={msg.id}
                     className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                   >
-                    <span className="text-[10px] text-[#94A3B8] mb-0.5 px-1">
+                    <span className="text-[10px] text-gray-400 mb-0.5 px-1">
                       {msg.senderName} ({msg.senderRole})
                     </span>
 
                     <div
-                      className={`max-w-[80%] rounded-2xl p-3 text-xs leading-relaxed ${
+                      className={`max-w-[80%] rounded-lg p-3 text-xs leading-relaxed ${
                         isMe
-                          ? 'bg-[#0F766E] text-white rounded-br-xs'
-                          : 'bg-white text-[#1E293B] border border-[#E8E6DF] rounded-bl-xs shadow-xs'
+                          ? 'bg-blue-600 text-white rounded-br-xs'
+                          : 'bg-white text-gray-900 border border-[#E8E6DF] rounded-bl-xs shadow-xs'
                       }`}
                     >
                       <p>{msg.text}</p>
@@ -315,7 +335,7 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                       {/* Embedded Structured Proposal Snapshot Card */}
                       {msg.structuredProposalSnapshot && (
                         <div className={`mt-2 p-2 rounded-xl text-[11px] font-mono ${
-                          isMe ? 'bg-white/15 text-white' : 'bg-[#FAF9F6] text-[#1E293B] border border-[#E8E6DF]'
+                          isMe ? 'bg-white/15 text-white' : 'bg-gray-50 text-gray-900 border border-[#E8E6DF]'
                         }`}>
                           <div className="flex justify-between">
                             <span>Count: {msg.structuredProposalSnapshot.quantity} units</span>
@@ -329,7 +349,7 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                       )}
                     </div>
 
-                    <span className="text-[9px] text-[#94A3B8] mt-0.5 px-1">
+                    <span className="text-[9px] text-gray-400 mt-0.5 px-1">
                       {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -339,23 +359,40 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Chat Input Bar */}
-          <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-[#E8E6DF] flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Type your message, counter-terms, or delivery notes..."
-              value={inputText}
-              onChange={e => setInputText(e.target.value)}
-              className="flex-1 px-3.5 py-2.5 bg-[#FAF9F6] border border-[#E8E6DF] rounded-xl text-xs sm:text-sm text-[#1E293B] focus:outline-none focus:border-[#0F766E]"
-            />
-            <button
-              type="submit"
-              disabled={!inputText.trim()}
-              className="p-2.5 bg-[#0F766E] hover:bg-[#0b5751] disabled:opacity-50 text-white rounded-xl transition-colors cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
+          {/* Chat Input Bar with Nugen Domain AI Suggestion Tool */}
+          <div className="bg-white border-t border-[#E8E6DF] p-2.5 space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <button
+                type="button"
+                onClick={handleGenerateAiSuggestion}
+                disabled={generatingAiSuggest}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 border border-blue-200 transition-all cursor-pointer"
+              >
+                <Sparkles className={`w-3.5 h-3.5 text-amber-500 ${generatingAiSuggest ? 'animate-spin' : ''}`} />
+                <span>{generatingAiSuggest ? 'Synthesizing with Nugen Model...' : '✨ Nugen AI Negotiation Assist'}</span>
+              </button>
+              <span className="text-[10px] text-gray-400 font-mono">
+                venuex-hospitality-domain-v1
+              </span>
+            </div>
+
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Type your message, counter-terms, or delivery notes..."
+                value={inputText}
+                onChange={e => setInputText(e.target.value)}
+                className="flex-1 px-3.5 py-2 bg-gray-50 border border-[#E8E6DF] rounded-xl text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-blue-600"
+              />
+              <button
+                type="submit"
+                disabled={!inputText.trim()}
+                className="p-2 bg-blue-600 hover:bg-[#0b5751] disabled:opacity-50 text-white rounded-xl transition-colors cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* RIGHT COLUMN: Separate Structured Deal Summary Panel */}
@@ -364,19 +401,19 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
             
             <div className="border-b border-[#F4F3EF] pb-3">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#0F766E]" />
-                <h3 className="text-sm font-bold text-[#1E293B]">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold text-gray-900">
                   Structured Deal Summary
                 </h3>
               </div>
-              <p className="text-[11px] text-[#64748B] mt-0.5">
+              <p className="text-[11px] text-gray-500 mt-0.5">
                 The agreement is locked as a binding structured record, not loose text.
               </p>
             </div>
 
             {/* Deal status flag */}
-            <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E8E6DF] flex items-center justify-between">
-              <span className="text-xs text-[#64748B]">Deal Record Status</span>
+            <div className="p-3 bg-gray-50 rounded-xl border border-[#E8E6DF] flex items-center justify-between">
+              <span className="text-xs text-gray-500">Deal Record Status</span>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                 isFinalized ? 'bg-[#EBF6F2] text-[#2A6D58]' : 'bg-[#FEF7EE] text-[#A15325]'
               }`}>
@@ -387,7 +424,7 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
             {/* Structured Input Fields (Quantity, Price, Delivery, Deposit) */}
             <div className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-[#1E293B] mb-1">
+                <label className="block text-[11px] font-semibold text-gray-900 mb-1">
                   Quantity (Units)
                 </label>
                 <input
@@ -396,12 +433,12 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                   disabled={isFinalized}
                   value={propQuantity}
                   onChange={e => setPropQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-3 py-1.5 bg-[#FAF9F6] border border-[#E8E6DF] rounded-lg text-xs font-bold text-[#1E293B] font-mono focus:outline-none disabled:opacity-70"
+                  className="w-full px-3 py-1.5 bg-gray-50 border border-[#E8E6DF] rounded-lg text-xs font-bold text-gray-900 font-mono focus:outline-none disabled:opacity-70"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-[#1E293B] mb-1">
+                <label className="block text-[11px] font-semibold text-gray-900 mb-1">
                   Agreed Rental Price (₹ / unit / day)
                 </label>
                 <input
@@ -410,13 +447,13 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                   disabled={isFinalized}
                   value={propRentalPrice}
                   onChange={e => setPropRentalPrice(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full px-3 py-1.5 bg-[#FAF9F6] border border-[#E8E6DF] rounded-lg text-xs font-bold text-[#0F766E] font-mono focus:outline-none disabled:opacity-70"
+                  className="w-full px-3 py-1.5 bg-gray-50 border border-[#E8E6DF] rounded-lg text-xs font-bold text-blue-600 font-mono focus:outline-none disabled:opacity-70"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#1E293B] mb-1">
+                  <label className="block text-[11px] font-semibold text-gray-900 mb-1">
                     Rental Days
                   </label>
                   <input
@@ -425,12 +462,12 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                     disabled={isFinalized}
                     value={propDays}
                     onChange={e => setPropDays(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full px-3 py-1.5 bg-[#FAF9F6] border border-[#E8E6DF] rounded-lg text-xs text-[#1E293B] font-mono focus:outline-none disabled:opacity-70"
+                    className="w-full px-3 py-1.5 bg-gray-50 border border-[#E8E6DF] rounded-lg text-xs text-gray-900 font-mono focus:outline-none disabled:opacity-70"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-[#1E293B] mb-1">
+                  <label className="block text-[11px] font-semibold text-gray-900 mb-1">
                     Delivery Fee (₹)
                   </label>
                   <input
@@ -439,13 +476,13 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                     disabled={isFinalized}
                     value={propDeliveryFee}
                     onChange={e => setPropDeliveryFee(parseInt(e.target.value) || 0)}
-                    className="w-full px-3 py-1.5 bg-[#FAF9F6] border border-[#E8E6DF] rounded-lg text-xs text-[#1E293B] font-mono focus:outline-none disabled:opacity-70"
+                    className="w-full px-3 py-1.5 bg-gray-50 border border-[#E8E6DF] rounded-lg text-xs text-gray-900 font-mono focus:outline-none disabled:opacity-70"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-[#1E293B] mb-1">
+                <label className="block text-[11px] font-semibold text-gray-900 mb-1">
                   Security Deposit (%)
                 </label>
                 <input
@@ -455,28 +492,28 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                   disabled={isFinalized}
                   value={propDepositPercent}
                   onChange={e => setPropDepositPercent(parseInt(e.target.value) || 15)}
-                  className="w-full px-3 py-1.5 bg-[#FAF9F6] border border-[#E8E6DF] rounded-lg text-xs text-[#1E293B] font-mono focus:outline-none disabled:opacity-70"
+                  className="w-full px-3 py-1.5 bg-gray-50 border border-[#E8E6DF] rounded-lg text-xs text-gray-900 font-mono focus:outline-none disabled:opacity-70"
                 />
               </div>
             </div>
 
             {/* Calculated Breakdown Table */}
-            <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E8E6DF] space-y-1.5 text-xs">
-              <div className="flex justify-between text-[#64748B]">
+            <div className="p-3 bg-gray-50 rounded-xl border border-[#E8E6DF] space-y-1.5 text-xs">
+              <div className="flex justify-between text-gray-500">
                 <span>Rental Subtotal</span>
-                <span className="font-mono text-[#1E293B]">₹{calculatedRentalSubtotal.toLocaleString('en-IN')}</span>
+                <span className="font-mono text-gray-900">₹{calculatedRentalSubtotal.toLocaleString('en-IN')}</span>
               </div>
-              <div className="flex justify-between text-[#64748B]">
+              <div className="flex justify-between text-gray-500">
                 <span>Porter Delivery Fee</span>
-                <span className="font-mono text-[#1E293B]">₹{propDeliveryFee.toLocaleString('en-IN')}</span>
+                <span className="font-mono text-gray-900">₹{propDeliveryFee.toLocaleString('en-IN')}</span>
               </div>
-              <div className="flex justify-between text-[#64748B]">
+              <div className="flex justify-between text-gray-500">
                 <span>Refundable Deposit ({propDepositPercent}%)</span>
                 <span className="font-mono text-[#2A6D58]">₹{calculatedDepositAmount.toLocaleString('en-IN')}</span>
               </div>
-              <div className="pt-2 border-t border-[#E8E6DF] flex justify-between font-bold text-sm text-[#1E293B]">
+              <div className="pt-2 border-t border-[#E8E6DF] flex justify-between font-bold text-sm text-gray-900">
                 <span>Total Commitment</span>
-                <span className="text-[#0F766E] font-mono">₹{calculatedTotalAmount.toLocaleString('en-IN')}</span>
+                <span className="text-blue-600 font-mono">₹{calculatedTotalAmount.toLocaleString('en-IN')}</span>
               </div>
             </div>
 
@@ -488,7 +525,7 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
               <>
                 <button
                   onClick={handleProposeDealUpdate}
-                  className="w-full py-2 px-3 bg-[#FAF9F6] hover:bg-[#F4F3EF] border border-[#E8E6DF] text-[#1E293B] text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                  className="w-full py-2 px-3 bg-gray-50 hover:bg-[#F4F3EF] border border-[#E8E6DF] text-gray-900 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
                 >
                   Propose Terms to Chat
                 </button>
@@ -496,7 +533,7 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                 <button
                   onClick={handleFinalizeDeal}
                   disabled={isFinalizing}
-                  className="w-full py-2.5 px-3 bg-[#0F766E] hover:bg-[#0b5751] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2.5 px-3 bg-blue-600 hover:bg-[#0b5751] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   <span>Finalize Structured Deal</span>
@@ -515,7 +552,7 @@ export const ChatNegotiationModal: React.FC<ChatNegotiationModalProps> = ({
                       onProceedToPayment(deal.id);
                       onClose();
                     }}
-                    className="w-full py-2.5 px-3 bg-[#0F766E] hover:bg-[#0b5751] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer animate-pulse"
+                    className="w-full py-2.5 px-3 bg-blue-600 hover:bg-[#0b5751] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer animate-pulse"
                   >
                     <span>Proceed to Simulated Deposit (₹{deal.totalAmount.toLocaleString('en-IN')})</span>
                     <ArrowRight className="w-3.5 h-3.5" />

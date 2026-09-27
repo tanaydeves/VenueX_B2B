@@ -231,3 +231,90 @@ export interface MatchScoreResult {
   };
   remainingAvailableQuantity: number;
 }
+
+// --- VenueX Subscription, Payment & Delivery Token System Models ---
+
+export type PartyType = 'SEEKER' | 'PROVIDER';
+
+export type SubscriptionStatus = 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PENDING';
+
+export interface SubscriptionRecord {
+  id: string;
+  partyId: string;
+  partyName: string;
+  partyType: PartyType;
+  planName: string;
+  status: SubscriptionStatus;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  autoRenew: boolean;
+  initialTokenAllocation: number; // 125 for Seekers, 0 for Providers
+  pricePaid: number; // in INR ₹
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TokenTransactionType = 'GRANT' | 'CONSUME' | 'EXTRA_PURCHASE' | 'REFUND';
+
+export interface DeliveryTokenLedgerEntry {
+  id: string;
+  seekerId: string;
+  type: TokenTransactionType;
+  amount: number; // positive for GRANT/EXTRA_PURCHASE/REFUND, negative for CONSUME
+  balanceAfter: number;
+  referenceId?: string; // dealId, bookingId, subscriptionId, paymentRecordId
+  notes: string;
+  isSimulated: true;
+  createdAt: string;
+}
+
+export interface DeliveryTokenBalance {
+  seekerId: string;
+  balance: number;
+  lastUpdated: string;
+}
+
+// Monetization channel / line item payment types (extensible string)
+export type PaymentType =
+  | 'RENT'
+  | 'DEPOSIT'
+  | 'SERVICE_FEE'
+  | 'SUBSCRIPTION_FEE'
+  | 'EXTRA_DT_PURCHASE'
+  | 'DELIVERY_PAYOUT'
+  | string;
+
+export interface PaymentRecord {
+  id: string;
+  partyId: string;
+  partyName?: string;
+  partyType: PartyType | 'SYSTEM' | 'LOGISTICS_PARTNER';
+  type: PaymentType;
+  amount: number; // in INR ₹
+  status: PaymentStatus;
+  referenceId?: string; // dealId, bookingId, subscriptionId, extraDtPackId
+  paymentMethod?: string;
+  simulatedTransactionId: string;
+  isSimulated: true;
+  simulationBadge: 'PROTOTYPE / SIMULATED PAYMENT';
+  description: string;
+  createdAt: string;
+}
+
+export interface PaymentResult {
+  success: boolean;
+  paymentRecord?: PaymentRecord;
+  error?: string;
+  isSimulated: true;
+  simulationNotice: string;
+}
+
+export interface TokenResult {
+  success: boolean;
+  entry?: DeliveryTokenLedgerEntry;
+  currentBalance: number;
+  error?: string;
+  errorCode?: 'INSUFFICIENT_TOKENS' | 'INVALID_AMOUNT' | 'USER_NOT_FOUND' | 'LOCKED';
+  isSimulated: true;
+}
+
